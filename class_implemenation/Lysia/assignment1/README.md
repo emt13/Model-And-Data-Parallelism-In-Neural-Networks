@@ -13,6 +13,6 @@
   
 ## Stanford resources 
 
-- [http://cs231n.github.io/optimization-2/] explains backprop very well. It also gives code examples performing forward pass and back prop using matrix multiplication
+- http://cs231n.github.io/optimization-2/ explains backprop very well. It also gives code examples performing forward pass and back prop using matrix multiplication
 
-- [http://cs231n.github.io/] has all other course notes, including SGD, loss, etc.
+- http://cs231n.github.io/ has all other course notes, including SGD, loss, etc.
