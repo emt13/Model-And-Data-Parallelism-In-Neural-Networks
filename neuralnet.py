@@ -14,7 +14,7 @@ class NeuralNetwork:
                 self.nodes_batch = nodes_batch
                 pass
 
-        def add_layer(self, layer_type, size_input, size_output):
+        def add_layer(self, layer_type, size_input=0, size_output=0):
                 """
                 TODO: Add a layer to the NeuralNetwork. 
                 """
@@ -50,9 +50,11 @@ def _test():
     nn = NeuralNetwork(nodes_model=8, nodes_batch=1)
     
     nn.add_layer("fc", 100, 90)
+    nn.add_layer("l12")
     nn.add_layer("fc", 160, 20)
+    nn.add_layer("l12")
     nn.add_layer("fc", 80, 50)
-
+    nn.add_layer("softmax")
     print(nn.layers)    
 
 if __name__=="__main__":
