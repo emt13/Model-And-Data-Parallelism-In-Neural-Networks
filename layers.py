@@ -60,11 +60,47 @@ class fully_connected_layer:
 		self.w += dw
 		self.b += db
 
+class l2_loss:
+	def loss(self, x, y):
+		"""
+		Returns L2 loss
 
-if __name__ == "__main__":
-	"""
-	Test layers here
-	"""
+		:param x: ndarray, prediction
+		:param y: ndarray, correct value
+		:return loss: float, L2 loss
+		:return dx: gradient
+		"""
+		N = x.shape[0]
+		D = np.prod(x.shape[1:])
+
+		_y = np.reshape(y, (N,D))
+		_x = np.reshape(x, (N,D))
+		_dx = 2*_x - _y
+
+		# loss = np.dot(_x.T, _x) - 2 * np.dot(_x.T, _y) + np.dot(_y.T, _y)
+		loss = np.linalg.norm(x-y)
+		dx = np.reshape(_dx, x.shape)
+
+		return loss, dx
+
+
+class softmax_loss:
+	def loss(self, x, y):
+		"""
+		Returns softmax loss
+
+		:param x: ndarray, prediction
+		:param y: ndarray, correct value
+		:return loss: float, softmax loss
+		:return dx: gradient
+		"""
+		pass
+
+
+"""
+TESTS ---
+"""
+def test_fc():
 	x = np.reshape(np.array([1,2,3,4,5,6,7,8,9]), [3,3]).astype(float)
 	weights = np.reshape(np.array([5,4,3,2,1,0]), [3,2]).astype(float)
 	biases = np.ones(2)
@@ -87,5 +123,25 @@ if __name__ == "__main__":
 	print("dx: {} \ndw: {}\n db: {}".format(dx, dw, db))
 
 	fc.apply_gradient(dw, db)
+
+def test_l2():
+	x = np.ones((2,2))
+	y = np.reshape(np.array([1,2,3,4]), [2,2]).astype(float)
+
+	l2 = l2_loss()
+	print(l2.loss(x,y))
+
+def test_softmax():
+	x = np.ones((2,2))
+	y = np.reshape(np.array([1,2,3,4]), [2,2]).astype(int)
+
+	sm = softmax_loss()
+	print(sm.loss(x,y))
+
+if __name__ == "__main__":
+	test_l2()
+	
+
+
 
 	pass
