@@ -9,9 +9,9 @@ class NeuralNetwork:
 		:param nodes_model: int, number of nodes to use for model parallelism 
 		:param nodes_batch: int, number of nodes to use for batch parallelism
 		"""
-		layers = []
-		nodes_model = nodes_model
-		nodes_batch = nodes_batch
+		self.layers = []
+		self.nodes_model = nodes_model
+		self.nodes_batch = nodes_batch
 		pass
 
 	def add_layer(self, layer_type, size_input, size_output):
