@@ -14,7 +14,7 @@ class NeuralNetwork:
 		nodes_batch = nodes_batch
 		pass
 
-	def add_layer(self, layer_type, size_input, size_output)::
+	def add_layer(self, layer_type, size_input, size_output):
 		"""
 		TODO: Add a layer to the NeuralNetwork. 
 		"""
