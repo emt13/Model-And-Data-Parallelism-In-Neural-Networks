@@ -75,7 +75,7 @@ class l2_loss:
 
 		_y = np.reshape(y, (N,D))
 		_x = np.reshape(x, (N,D))
-		_dx = 2*_x - _y
+		_dx = 2*_x - 2*_y
 
 		# loss = np.dot(_x.T, _x) - 2 * np.dot(_x.T, _y) + np.dot(_y.T, _y)
 		loss = np.linalg.norm(x-y)
