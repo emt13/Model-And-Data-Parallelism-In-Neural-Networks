@@ -62,14 +62,32 @@ def scatter_data(x, xdims, comm, rank, size):
 
     return np.array(recvbuf).reshape((size_proc, sizeofdp))
 
+def all_reduce_data(dparameter_list, comm, rank, size):
+    """
+    For Batch parralelism.
+    All reduce dw/db from all processes to all processes.
+   (The dimensions are conserved (the data are not flat)?)
+
+    Params:
+       
+    Returns:
+    """
+    
+    sendbuf = dparameter_list
+    recvbuf = None
+    comm.Allreduce(sendbuf, recvbuf, op=MPI.SUM)
+    return recvbuf
+
+
 
 if __name__=="__main__":
+    """
+    # Debug scatter_data
     
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
     size = comm.Get_size()
 
-    # Run this with 2 processes
     x = None
     y = None
     if rank == 0:
@@ -81,4 +99,30 @@ if __name__=="__main__":
     x = scatter_data(x, (5,2), comm, rank, size)
     y = scatter_data(y, (5,1), comm, rank, size)  
     print("rank: ", rank, "my data: ", x, y)
+    """
     
+    # Debug All Reduce
+    # Run this with 2 processes
+    comm = MPI.COMM_WORLD
+    rank = comm.Get_rank()
+    size = comm.Get_size()
+    
+    #Number of layers 
+    L = 4
+    height_w = 3
+    width_w = 2
+    
+    dw_all_layers = np.random.rand(L, height_w, width_w)
+    
+    if rank == 0 :
+        print("rank: ", rank , "my dw all layers: " ,  dw_all_layers)
+
+    elif rank == 1 :
+        print("rank: ", rank , "my dw all layers: " ,  dw_all_layers)
+
+    reduced_dw = all_reduce_data(dw_all_layers, comm, rank, size)
+
+    if rank == 0 :
+        print("rank: ", rank, "my reduced dw: ", reduced_dw)
+    elif rank == 1 : 
+        print("rank: ", rank, "my reduced dw", reduced_dw)
