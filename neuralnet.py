@@ -30,7 +30,38 @@ class NeuralNetwork:
                 """
                 TODO: Training procedure for batch parallelism
                 """
-                pass
+                
+                # mpi init
+                
+                # create the layers themselves
+
+                # for 1 ... epoch:
+                #       if rank is 0, shuffle
+
+                #       if rank is 0, break into minibatches
+                
+                #       for i in range(num_minibatches):
+                #               x = scatter_helper(minibatches[i], mb_dimension, comm, rank, size)
+                #               y = scatter_helper(minibatches[i], mb_dimension, comm, rank, size)
+                
+                #               all_zs = [(x)]
+                #               in = x
+                #               for layer in layers:
+                #                       out = layer.forward(in)
+                #                       all_zs.append(out)
+                #                       
+                #               loss, dy = l2_loss(all_zs[-1], y) 
+                #               
+                #               dws, dbs = [], []       
+                #               for layer in reversed(layers):
+                #                       dx, dw, db = layer.backwards(dy)
+                #                       dy = dx
+                #                       dws.append(dw)
+                #                       dbs.append(db)
+                #               allReduce(dws, size)
+                #               allReduce(dbs, size)
+                
+
 
         def test(self, x):
                 """

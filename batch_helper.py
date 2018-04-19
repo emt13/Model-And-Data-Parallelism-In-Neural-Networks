@@ -81,7 +81,6 @@ def all_reduce_data(dparameter_list, comm, rank, size):
 
 
 if __name__=="__main__":
-    """
     # Debug scatter_data
     
     comm = MPI.COMM_WORLD
@@ -99,8 +98,8 @@ if __name__=="__main__":
     x = scatter_data(x, (5,2), comm, rank, size)
     y = scatter_data(y, (5,1), comm, rank, size)  
     print("rank: ", rank, "my data: ", x, y)
-    """
-    
+   
+    ''' 
     # Debug All Reduce
     # Run this with 2 processes
     comm = MPI.COMM_WORLD
@@ -126,3 +125,5 @@ if __name__=="__main__":
         print("rank: ", rank, "my reduced dw: ", reduced_dw)
     elif rank == 1 : 
         print("rank: ", rank, "my reduced dw", reduced_dw)
+
+    '''
