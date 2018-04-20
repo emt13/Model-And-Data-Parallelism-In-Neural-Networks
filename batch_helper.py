@@ -170,4 +170,4 @@ if __name__ == "__main__":
 
     # Assert for test case 2
     for i in range(L):
-        assert reduced_dw[i].shape == shapes[i]
+        assert reduced_dw[i].shape == shapes[i], "Shapes do not match"
