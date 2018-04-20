@@ -1,4 +1,7 @@
-import layers
+import numpy as np
+from mpi4py import MPI
+from batch_helper import scatter_data, all_reduce_data
+from layers import l2_loss
 
 class NeuralNetwork:
 
@@ -26,11 +29,78 @@ class NeuralNetwork:
                 """
                 pass
 
-        def train_batch_parallelism(self, x, y):
+        def train_batch_parallelism(self, x, y, epochs, mini_batch_size, eta, test_data=None):
                 """
                 TODO: Training procedure for batch parallelism
                 """
-                pass
+                
+                # mpi init
+                comm = MPI.COMM_WORLD
+                rank = comm.Get_rank()
+                size = comm.Get_size()
+                
+                # create the layers themselves
+                layers = self.layers
+                
+                # for 1 ... epoch:
+                for j in range(epochs):
+                #   if rank is 0, shuffle
+                    if(rank==0):
+                        training_data = list(zip(x, y))
+                        n = len(training_data)
+                        np.random.shuffle(training_data)
+                #       if rank is 0, break into minibatches
+                        mini_batches = [training_data[k:k+mini_batch_size] for k in range(0, n, mini_batch_size)]
+                        
+
+
+            #       for i in range(num_minibatches):
+                    for mini_batch in mini_batches:
+                        all_x = mini_batch[:,0]
+                        all_y = mini_batch[:,1]
+            #           x = scatter_helper(minibatches[i], mb_dimension, comm, rank, size)
+                        x = scatter_data(all_x, (len(all_x), len(all_x[0])) , comm, rank, size)
+            #           y = scatter_helper(minibatches[i], mb_dimension, comm, rank, size)
+                        y = scatter_data(all_y, (len(all_y), len(all_y[0])) , comm, rank, size)
+            
+            #           all_zs = [(x)]
+                        all_zs = [x]
+            #           in = x
+            #           for layer in layers:
+                        for layer in layers:
+            #               out = layer.forward(in)
+                            z = layer.append(x)
+            #               all_zs.append(out)
+                            all_zs.append(z)
+                            x = z
+            #                       
+            #           loss, dy = l2_loss(all_zs[-1], y) 
+                        loss, dy = l2_loss(all_zs[-1], y) 
+            #           dws, dbs = [], []   
+                        dws, dbs = [], []
+            #           for layer in reversed(layers):
+                        for layer in reversed(layers):
+            #               dx, dw, db = layer.backwards(dy)
+                            dx, dw, db = layer.backwards(dy)
+            #               dy = dx
+                            dy = dx
+            #               dws.append(dw)
+                            dws.append(dw)
+            #               dbs.append(db)
+                            dws.append(dw)
+            #           allReduce(dws, size)
+                        reduced_dws = all_reduce_data(dws)
+            #           allReduce(dbs, size)
+                        reduced_dbs = all_reduce_data(dbs)
+                        
+                        
+                        for i in range(len(layers)):
+                            layer = layers[i]
+                            layer.apply_gradient(reduced_dws[i],reduced_dbs[i])
+                            
+                    print ("Epoch {0} complete".format(j))
+                
+
 
         def test(self, x):
                 """
