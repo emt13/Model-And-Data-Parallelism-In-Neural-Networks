@@ -62,21 +62,45 @@ def scatter_data(x, xdims, comm, rank, size):
 
     return np.array(recvbuf).reshape((size_proc, sizeofdp))
 
-def all_reduce_data(dparameter_list, comm, rank, size):
+def all_reduce_data(grads, comm, rank, size):
     """
-    For Batch parralelism.
-    All reduce dw/db from all processes to all processes.
+    For Batch parallelism.
+    All reduce gradients from all processes to all processes.
    (The dimensions are conserved (the data are not flat)?)
 
     Params:
+        grads: list of gradients (ndarray) for each layer
        
     Returns:
+        reduced_grads: list of reduced (summed) gradients (ndarray)
     """
-    
-    sendbuf = dparameter_list
-    recvbuf = None
-    comm.Allreduce(sendbuf, recvbuf, op=MPI.SUM)
-    return recvbuf
+
+    sendbuf_grads = []
+    shapes = []
+
+    # flatten each gradient from ndarray to list
+    # store the shapes
+    for grad in grads:
+        shapes.append(grad.shape)
+        sendbuf_grads += grad.flatten().tolist()
+
+    # list is immutable and thus cannot be changed inplace by allreduce
+    # need to convert lists to buffer-like ndarrays
+    sendbuf_grads = np.array(sendbuf_grads)
+    recvbuf_grads = np.zeros(len(sendbuf_grads))
+    comm.Allreduce(sendbuf_grads, recvbuf_grads)
+
+    # recover to a list of correctly shaped ndarray
+    reduced_grads = []
+    start = 0
+    for shape in shapes:
+        # NOTE: np.prod returns random result when overflow!
+        num_elems = np.prod(shape)
+        curr_elems = recvbuf_grads[start:start+num_elems]
+        reduced_grads.append(np.array(curr_elems).reshape(shape))
+        start += num_elems
+
+    return reduced_grads
 
 
 
@@ -106,14 +130,26 @@ if __name__=="__main__":
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
     size = comm.Get_size()
-    
-    #Number of layers 
+
+    dw_all_layers = []
+
+    # Test case 1: all layers have same shape of weights
+    # Number of layers
+    # L = 4
+    # height_w = 3
+    # width_w = 1
+
+    # for l in range(L):
+    #     dw_all_layers.append(np.random.rand(height_w, width_w))
+
+    # Test case 2: layers have variable shapes of weights
     L = 4
-    height_w = 3
-    width_w = 2
-    
-    dw_all_layers = np.random.rand(L, height_w, width_w)
-    
+    shapes = [(3, 1), (2, 2), (4, 5), (2, 1)]
+
+    for shape in shapes:
+        dw_all_layers.append(np.random.rand(shape[0], shape[1]))
+
+    # Run by all test cases
     if rank == 0 :
         print("rank: ", rank , "my dw all layers: " ,  dw_all_layers)
 
@@ -126,3 +162,11 @@ if __name__=="__main__":
         print("rank: ", rank, "my reduced dw: ", reduced_dw)
     elif rank == 1 : 
         print("rank: ", rank, "my reduced dw", reduced_dw)
+
+    # Assert for test case 1
+    # for dw in reduced_dw:
+    #     assert dw.shape == (height_w, width_w), "Shapes do not match"
+
+    # Assert for test case 2
+    for i in range(L):
+        assert reduced_dw[i].shape == shapes[i]
