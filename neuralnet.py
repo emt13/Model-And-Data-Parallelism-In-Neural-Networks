@@ -84,8 +84,10 @@ class NeuralNetwork:
             #           x = scatter_helper(minibatches[i], mb_dimension, comm, rank, size)
                         
                         x_rank = scatter_data(all_x, (len(all_x), len(all_x[0])) , comm, rank, size)
-                        #if rank == 0:
-                        #    print("x_rank: ", x_rank)
+                        """
+                        if rank == 0:
+                            print("x_rank: ", x_rank)
+                        """
             #           y = scatter_helper(minibatches[i], mb_dimension, comm, rank, size)
                         y_rank = scatter_data(all_y, (len(all_y), len(all_y[0])) , comm, rank, size)
             
@@ -100,36 +102,55 @@ class NeuralNetwork:
             #               all_zs.append(out)
                             all_zs.append(z)
                             x_rank = z
+                            
+                            """
                             if rank== 0: 
                                 print("rank: ", rank, "count_batch",count_batch, "count_layer: ", count_layer, "w: ",layer.w)
+                            """
                             
                             count_layer +=1
-            #                       
+                                  
             #           loss, dy = l2_loss(all_zs[-1], y) 
                         loss_value, dy = loss.loss(all_zs[-1], y_rank)
-                        #if rank== 0: 
-                        #    print("dy", dy)
-                        #    print("loss", loss_value)
+                        
+                        """
+                        if rank== 0: 
+                            print("dy", dy)
+                            print("loss", loss_value)
+                        """
+                        
             #           dws, dbs = [], []   
                         dws, dbs = [], []
             #           for layer in reversed(layers):
                         for layer in reversed(layers):
             #               dx, dw, db = layer.backwards(dy)
                             dx, dw, db = layer.backward(dy)
+                            
+                            """
                             #if rank== 0: 
                             #    print("dw: ", dw)
                             #    print("dx: ", dx)
+                            """
+                            
             #               dy = dx
                             dy = dx
             #               dws.append(dw)
                             dws.append(dw)
             #               dbs.append(db)
                             dbs.append(db)
-                        count_batch+=1
+                        
+                        """
+                        #count_batch+=1
+                        """
+                        
             #           allReduce(dws, size)
                         reduced_dws = all_reduce_data(dws, comm, rank, size)
-                        if rank == 0:
-                            print("reduced_dws: ", reduced_dws)
+                        
+                        """
+                        #if rank == 0:
+                        #    print("reduced_dws: ", reduced_dws)
+                        """
+                        
             #           allReduce(dbs, size)
                         reduced_dbs = all_reduce_data(dbs, comm, rank, size)
                         
