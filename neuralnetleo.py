@@ -2,7 +2,7 @@ import numpy as np
 import layers
 from mpi4py import MPI
 import test
-from batch_helper import scatter_data
+from batch_helper import scatter_data,all_reduce_data
 
 class NeuralNetwork:
 

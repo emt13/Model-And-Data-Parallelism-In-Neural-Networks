@@ -2,8 +2,8 @@ import numpy as np
 
 class fully_connected_layer:
 	def __init__(self, size_input, size_output):
-		self.w = np.random.random((size_input, size_output))
-		self.b = np.random.random(size_output)
+		self.w = np.random.randn(size_input, size_output)
+		self.b = np.random.randn(size_output)
 		self.cache = []
 
 	def forward(self, x):
@@ -45,7 +45,7 @@ class fully_connected_layer:
 
 		return dx, dw, db
 
-	def apply_gradient(self, dw, db):
+	def apply_gradient(self, dw, db, eta, B):
 		"""
 		Changes the weights based on the gradients provided
 
@@ -57,8 +57,8 @@ class fully_connected_layer:
 		"""
 		assert dw.size == self.w.size
 		assert db.size == self.b.size
-		self.w += dw
-		self.b += db
+		self.w = self.w - (1.0*eta)/(1.0*B)*dw
+		self.b = self.b - (1.0*eta)/(1.0*B)*db
 
 class l2_loss:
 	def loss(self, x, y):
@@ -75,7 +75,7 @@ class l2_loss:
 
 		_y = np.reshape(y, (N,D))
 		_x = np.reshape(x, (N,D))
-		_dx = 2*_x - _y
+		_dx = 2*_x - 2*_y
 
 		# loss = np.dot(_x.T, _x) - 2 * np.dot(_x.T, _y) + np.dot(_y.T, _y)
 		loss = np.linalg.norm(x-y)
