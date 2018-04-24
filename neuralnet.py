@@ -43,29 +43,15 @@ class NeuralNetwork:
                 size = comm.Get_size()
                 
                 # Create the layers themselves
-                layers = []
-                seed = 0
-                for layer in self.layers:
-                    if layer[0] == "fc":
-                        # Important note here: every layer is initialized on each process.
-                        # The initialization is random so: either we broadcast the weights and biases
-                        # Or we add a seed in layer. For now, we chose the latest.
-                        layers.append(fully_connected_layer(layer[1],layer[2],seed))
-                    else:
-                        return ("sorry at least, one layer type is not valid")
-                    seed += 1
-                
-                if self.loss == "l2":
-                    loss = l2_loss()
+                layers, loss = self._init_layers()
+                print(layers)
 
-                else : 
-                    return ("sorry this loss is not valid")
-                                
+                               
                 # for 1 ... epoch:
                 for j in range(epochs):
                 #   if rank is 0, shuffle
                     if(rank==0):
-                        training_data = zip(list(x), list(y))
+                        training_data = list(zip(list(x), list(y)))
                         n = len(training_data)
                         np.random.shuffle(training_data)
                 #       if rank is 0, break into minibatches
@@ -74,7 +60,7 @@ class NeuralNetwork:
                     # The following mini_batches are dummies. There are needed to go trhough the following for loop on each process
                     # There might be a better way to do it though.
                     else:
-                        training_data = zip(list(x), list(y))
+                        training_data = list(zip(list(x), list(y)))
                         n = len(training_data)
                         mini_batches = [training_data[k:k+mini_batch_size] for k in range(0, n, mini_batch_size)]
                     
@@ -215,10 +201,32 @@ class NeuralNetwork:
                 pass
 
 
+        def _init_layers(self, seed=0):
+            layers = []
+            loss = None 
+            seed = 0
+            for layer in self.layers:
+                if layer[0] == "fc":
+                    # Important note here: every layer is initialized on each process.
+                    # The initialization is random so: either we broadcast the weights and biases
+                    # Or we add a seed in layer. For now, we chose the latter.
+                    layers.append(fully_connected_layer(layer[1],layer[2],seed))
+                else:
+                    print(layer[0], "is not valid")
+                    return []
+                seed += 1
+            if self.loss == "l2":
+                loss = l2_loss()
+            else : 
+                print("invalid loss layer")
+                return []
+            return layers, loss
+             
+
 
 def _test():
     nn = NeuralNetwork(nodes_model=8, nodes_batch=1)
-    
+
     nn.add_layer("fc", 100, 90)
     nn.add_layer("l12")
     nn.add_layer("fc", 160, 20)
@@ -246,7 +254,7 @@ def _test_batch():
     x_test = np.random.randn(full_batch_size_test,input_shape)
     y_test = np.transpose([np.sin(x_test[:,0])])
     
-    test_data = zip(list(x_test), list(y_test))
+    test_data = list(zip(list(x_test), list(y_test)))
     
     # We don't really care about nodes_model and nodes_batch for now 
     nn = NeuralNetwork(nodes_model=1, nodes_batch=2)
