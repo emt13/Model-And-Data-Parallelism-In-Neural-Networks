@@ -6,6 +6,7 @@ Created on Tue Apr 17 10:42:37 2018
 
 from mpi4py import MPI
 import numpy as np
+import sys
 
 
 def scatter_data(x, xdims, comm, rank, size):
@@ -25,7 +26,6 @@ def scatter_data(x, xdims, comm, rank, size):
                   - (x_rank, y_rank) Data belonging to process "rank". The scattering is balanced.
                         (np.array , np.array) - Dimensions: (N \times [ Dx1, Dx2, ... , Dxm ] , N \times [ Dy1, Dy2, ... , Dym ])
     """
-
     buf = None
     recvbuf = None
 
@@ -55,13 +55,23 @@ def scatter_data(x, xdims, comm, rank, size):
             curr += 1
 
     # will recv in a list
+    #if rank == 0:
+        #print("buf: ", buf)
+        
     recvbuf = comm.scatter(buf, root=0)
 
     size_proc = xdims[0] // size
     if rank < xdims[0] % size:
         size_proc += 1
-
-    return np.array(recvbuf).reshape((size_proc, sizeofdp))
+    
+    #if rank == 1:    
+        #print("recvbuf: ", recvbuf)
+        #print("size reshape", (size_proc, sizeofdp))
+        
+    if not recvbuf:
+        return np.array([])
+    else:
+        return np.array(recvbuf).reshape((size_proc, sizeofdp))
 
 
 def all_reduce_data(grads, comm, rank, size):

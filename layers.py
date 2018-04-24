@@ -1,7 +1,8 @@
 import numpy as np
 
 class fully_connected_layer:
-	def __init__(self, size_input, size_output):
+	def __init__(self, size_input, size_output, seed):
+		np.random.seed(seed)
 		self.w = np.random.randn(size_input, size_output)
 		self.b = np.random.randn(size_output)
 		self.cache = []
