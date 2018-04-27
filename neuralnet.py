@@ -107,10 +107,12 @@ class NeuralNetwork:
                 #print(layers)
                 #print("*", rank, "*", mini_batch_size, len(x))
                 
-                   
+                start = MPI.Wtime()
+                epochTimes = []   
                                
                 # for 1 ... epoch:
                 for e in range(epochs):
+                    eStart = MPI.Wtime()
                 #   if rank is 0, shuffle
                     if(rank==0):
                         #print("\n\n ---- EPOCH", e)
@@ -240,6 +242,8 @@ class NeuralNetwork:
                         print("weights first layer", layers[0].w)
                     """
                     if rank == 0:
+                        eEnd = MPI.Wtime()
+                        epochTimes.append(eEnd - eStart)
                         '''
                         count = 1
                         print("number of layers:", len(layers))
@@ -254,6 +258,12 @@ class NeuralNetwork:
                             print ("Epoch {0}/{1} complete - loss: {2}".format(e+1, epochs, self.evaluate(test_data, layers, loss)))
                         else:
                             print ("Epoch {0}/{1} complete".format(e+1, epochs))
+                if rank == 0:
+                    end = MPI.Wtime()
+                    print("Total time was:", end - start)
+                    for i in range(len(epochTimes)):
+                        print("  (" + str(i) + ")", epochTimes[i]) 
+                    print()
                 
         def evaluate(self, test_data, layers, loss):
             test_results = [(self.feedforward(np.array([x_test]), layers), y_test)
@@ -323,7 +333,7 @@ def _test():
 
 
 def _test_batch():
-   
+    ''' 
     # UCI ethlyne test
     # huge test
     data = np.loadtxt(open("Data/ethylene_methane.csv", "rb"), delimiter=",")
@@ -346,8 +356,8 @@ def _test_batch():
     epochs = 10
     mini_batch_size = 10000
     eta = 0.00000001
-
     '''
+    
      
     # UCI airfoil test
     data = np.loadtxt(open("Data/airfoil_self_noise.dat", "rb"), delimiter="\t")    
@@ -371,7 +381,7 @@ def _test_batch():
     mini_batch_size = 128
     eta = 0.00000000011
     
-    '''
+    
     
     '''
     # sinoid dataset 
