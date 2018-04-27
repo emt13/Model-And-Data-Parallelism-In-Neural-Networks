@@ -27,11 +27,62 @@ class NeuralNetwork:
         def add_loss(self, loss_function):
             self.loss = loss_function
 
-        def train_model_parallelism(self, x, y):
+        def train_model_parallelism(self, x, y, epochs, mini_batch_size, eta, test_data=None):
                 """
                 TODO: Training procedure for model parallelism
                 """
-                pass
+                x_shape = x.shape
+                y_shape = y.shape
+
+                mini_batch_shapes = [len(x[k:k + mini_batch_size]) for k in range(0, len(x), mini_batch_size)]
+
+                # mpi init
+                comm = MPI.COMM_WORLD
+                rank = comm.Get_rank()
+                size = comm.Get_size()
+                
+                #TODO
+                # Create the layers themselves
+                layers, loss = self._init_layers()
+                
+                for e in range(epochs):
+                    training_data = list(zip(list(x), list(y)))
+                    n = len(training_data)
+                    np.random.shuffle(training_data)
+                    mini_batches =[training_data[k:k+mini_batch_size] for k in range(0, n, mini_batch_size)]
+                    
+                    for i in range(len(mini_batch_shapes)):
+                        # Naming convention
+                        # variable_all means that variable is common to all processes
+                        # all_variable referes to a lsit of variables from each layer
+                        x_all = np.array([j[0] for j in mini_batches[i]])
+                        y_all = np.array([j[1] for j in mini_batches[i]])
+                        all_zs_reduced = [x_all]
+                        
+                        for layer in layers:
+                            z_rank = layer.forward(x_all)
+                            z_reduced = np.vstack(all_reduce_data(z_rank, comm, rank, size))
+                            all_zs_reduced.append(z_reduced)
+                            x_all = z_reduced
+                        
+                        loss_value, dy = loss.loss(all_zs_reduced[-1], y_all)
+                        
+                        
+                        for layer in reversed(layers):
+                            #TODO
+                            dx_rank, dw_rank, db_rank = layer.backward(dy)
+                            dx_reduced = np.vstack(all_reduce_data(dx_rank, comm, rank, size))
+                            dy = dx_reduced
+                            
+                            #TODO 
+                            layer.apply_gradient(dw_rank, db_rank, eta, mini_batch_shapes[i])
+                            
+                    if test_data:
+                        print ("Epoch {0}/{1} complete - loss: {2}".format(e+1, epochs, self.evaluate(test_data, layers, loss)))
+                    else:
+                        print ("Epoch {0}/{1} complete".format(e+1, epochs))
+                                
+                            
 
         def train_batch_parallelism(self, x, y, epochs, mini_batch_size, eta, test_data=None):
                 """
@@ -87,8 +138,8 @@ class NeuralNetwork:
                         all_x = None
                         all_y = None
                         if rank == 0:
-                            all_x = np.array([i[0] for i in mini_batches[i]])
-                            all_y = np.array([i[1] for i in mini_batches[i]])
+                            all_x = np.array([j[0] for j in mini_batches[i]])
+                            all_y = np.array([j[1] for j in mini_batches[i]])
                             #print(" -- all_x:", all_x)
                             #print(" -- all_y:", all_y)
                         
@@ -165,6 +216,7 @@ class NeuralNetwork:
                                 dbs.append(db)
                         
             #           allReduce(dws, size)
+            
                         reduced_dws = all_reduce_data(dws, comm, rank, size)
                         
                         #print(rank, "rdws", reduced_dws)
@@ -201,7 +253,7 @@ class NeuralNetwork:
                         if test_data:
                             print ("Epoch {0}/{1} complete - loss: {2}".format(e+1, epochs, self.evaluate(test_data, layers, loss)))
                         else:
-                            print ("Epoch {0}/{1} complete".format(e, epochs))
+                            print ("Epoch {0}/{1} complete".format(e+1, epochs))
                 
         def evaluate(self, test_data, layers, loss):
             test_results = [(self.feedforward(np.array([x_test]), layers), y_test)
@@ -290,9 +342,9 @@ def _test_batch():
     #full_batch_size_test = 8
     input_shape = x.shape[1]
     output_shape = y.shape[1]
-    epochs = 10000
-    mini_batch_size = 350
-    eta = 0.0000000001
+    epochs = 100
+    mini_batch_size = 128
+    eta = 0.00000000011
     
 
     
@@ -348,7 +400,41 @@ def _test_batch():
     
     nn.train_batch_parallelism(x_train, y_train, epochs, mini_batch_size,eta, test_data = test_data)
     
+def _test_model(): 
+    # UCI airfoil test
+    data = np.loadtxt(open("Data/airfoil_self_noise.dat", "rb"), delimiter="\t")    
+    x = data[:,1:5]
+    y = data[:,5].reshape(len(x), 1)
+
+    x_train = x[:1200]
+    y_train = y[:1200]
+    x_test = x[1200:]
+    y_test = y[1200:]
+    print(x.shape)
+    print(y.reshape(len(y), 1).shape)
+
+    test_data = list(zip(list(x_test), list(y_test)))
     
+    input_shape = x.shape[1]
+    output_shape = y.shape[1]
+    epochs = 100
+    mini_batch_size = 2
+    eta = 0.00000000011
+    
+    # We don't really care about nodes_model and nodes_batch for now 
+    nn = NeuralNetwork(nodes_model=1, nodes_batch=2)
+    
+    nn.add_layer("fc", 4, 7)
+    nn.add_layer("fc", 7, 8)
+    nn.add_layer("fc", 8, 1)
+    nn.add_loss("l2")
+    #nn.add_loss("softmax")
+
+    #nn.add_layer("fc", input_shape, 7)
+    #nn.add_layer("fc",7, output_shape)
+    #nn.add_loss("l2")
+    
+    nn.train_model_parallelism(x_train, y_train, epochs, mini_batch_size,eta, test_data = test_data)
     
 if __name__=="__main__":
-    _test_batch()    
+    _test_model()    
