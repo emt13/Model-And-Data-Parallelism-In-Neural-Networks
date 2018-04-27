@@ -102,7 +102,6 @@ def all_reduce_data(grads, comm, rank, size):
     recvbuf_grads = np.zeros(len(sendbuf_grads))
     comm.Allreduce(sendbuf_grads, recvbuf_grads)
 
-if __name__=="__main__":
     # recover to a list of correctly shaped ndarray
     reduced_grads = []
     start = 0
@@ -116,7 +115,8 @@ if __name__=="__main__":
     return reduced_grads
 
 
-#if __name__ == "__main__":
+if __name__ == "__main__":
+    print()
     """
     # Debug scatter_data
 
@@ -174,3 +174,4 @@ if __name__=="__main__":
         print("rank: ", rank, "my reduced dw: ", reduced_dw)
     elif rank == 1 : 
         print("rank: ", rank, "my reduced dw", reduced_dw)
+    """
