@@ -1,13 +1,17 @@
 import numpy as np
 
 class fully_connected_layer:
-        def __init__(self, size_input, size_output, seed):
+        def __init__(self, size_input, size_output, seed, mask=None):
                 np.random.seed(seed)
+                #mask needed for model parellelism to zero out values held by other processes
                 #self.w = np.random.randn(size_input, size_output)
                 #self.b = np.random.randn(size_output)
                 self.w = np.ones((size_input, size_output))
                 self.b = np.ones(size_output)
-
+                self.mask_w = np.ones((size_input, size_output)) if mask == None else mask
+                self.mask_b = np.ones(size_output) if mask == None else mask[0]
+                assert self.mask_w.shape == self.w.shape
+                assert self.mask_b.shape == self.b.shape
                 self.cache = []
 
         def forward(self, x):
@@ -21,7 +25,7 @@ class fully_connected_layer:
                 N = x.shape[0]
                 D = np.prod(x.shape[1:])
                 x_flattened = np.reshape(x,(N,D))
-                out = np.dot(x, self.w) + self.b
+                out = np.dot(x, np.multiply(self.w, self.mask_w)) + self.b
                 
                 self.cache = x
                 return out
@@ -42,9 +46,10 @@ class fully_connected_layer:
                 D = np.prod(x.shape[1:])
                 x_flattened = np.reshape(x, (N,D))
 
-                dx_flattened = np.dot(dout, self.w.T)
+
+                dx_flattened = np.dot(dout, np.multiply(self.w.T, self.mask_w.T))
                 dw = np.dot(dx_flattened.T, dout)
-                db = np.dot(dout.T, np.ones(N))
+                db = np.multiply(np.dot(dout.T, np.ones(N)), self.mask_b)
                 dx = np.reshape(dx_flattened, x.shape)
 
                 return dx, dw, db
