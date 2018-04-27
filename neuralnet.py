@@ -44,8 +44,12 @@ class NeuralNetwork:
                 #TODO
                 # Create the layers themselves
                 layers, loss = self._init_layers()
-                
+               
+                start = MPI.Wtime()
+                epochTimes = []
+ 
                 for e in range(epochs):
+                    eStart = MPI.Wtime()
                     training_data = list(zip(list(x), list(y)))
                     n = len(training_data)
                     np.random.shuffle(training_data)
@@ -81,6 +85,15 @@ class NeuralNetwork:
                         print ("Epoch {0}/{1} complete - loss: {2}".format(e+1, epochs, self.evaluate(test_data, layers, loss)))
                     else:
                         print ("Epoch {0}/{1} complete".format(e+1, epochs))
+                    eEnd = MPI.Wtime()
+                    epochTimes.append(eEnd - eStart)
+        
+                if rank == 0:
+                    end = MPI.Wtime()
+                    print("Finished model in", end - start)
+                    for i in range(len(epochTimes)):
+                        print("  ", i, "  ", epochTimes[i])             
+                    print()
                                 
                             
 
@@ -472,5 +485,5 @@ def _test_model():
     nn.train_model_parallelism(x_train, y_train, epochs, mini_batch_size,eta, test_data = test_data)
     
 if __name__=="__main__":
-    #_test_model()    
-    _test_batch()
+    _test_model()    
+    #_test_batch()
