@@ -448,9 +448,17 @@ def _test_batch():
     
     nn.train_batch_parallelism(x_train, y_train, epochs, mini_batch_size,eta, test_data = test_data)
     
+def _load_data(f, delimiter=","):
+    data = []
+    for l in f:
+        data.append([float(x) for x in l.split(delimiter)])
+    f.close()
+    return np.array(data).reshape((len(data), len(data[0])))
+
 def _test_model(): 
 
-    data = np.loadtxt(open("Data/ethylene_methane.csv", "rb"), delimiter=",")
+    #data = np.loadtxt(open("Data/ethylene_methane.csv", "rb"), delimiter=",")
+    data = _load_data(open("Data/ethylene_methane.csv", "r"))
     x = data[:,3:]
     y = data[:,1:3]
     
