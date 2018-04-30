@@ -290,7 +290,7 @@ def _test():
 
 
 def _test_batch():
-
+    '''
     # UCI ethlyne test
     # huge test
     #data = np.loadtxt(open("Data/ethylene_methane.csv", "rb"), delimiter=",")
@@ -314,11 +314,12 @@ def _test_batch():
     epochs = 10
     mini_batch_size = 10000
     eta = 0.00000001
-    
-
     ''' 
+
+    #''' 
     # UCI airfoil test
     data = np.loadtxt(open("Data/airfoil_self_noise.dat", "rb"), delimiter="\t")    
+    #data = _load_data(open("Data/airfoil_self_noise.dat", "r"))
     x = data[:,1:5]
     y = data[:,5].reshape(len(x), 1)
 
@@ -335,10 +336,10 @@ def _test_batch():
     #full_batch_size_test = 8
     input_shape = x.shape[1]
     output_shape = y.shape[1]
-    epochs = 100
+    epochs = 10
     mini_batch_size = 128
     eta = 0.00000000011
-    ''' 
+    #''' 
     
     
     '''
@@ -397,10 +398,16 @@ def _load_data(f, delimiter=","):
     data = []
     count = 0
     for l in f:
-        data.append([float(x) for x in l.split(delimiter)])
+        split = l.split(delimiter)
+        sub = []
+        for s in split:
+            try:
+                sub.append(float(s))
+            except Exception as e:
+                sub.append("Error")
+                
+        data.append(sub)
         count += 1
-        #if count % 10000 == 0:
-        #    print("rank:", MPI.COMM_WORLD.Get_rank(), "count:", count)
     f.close()
     return np.array(data).reshape((len(data), len(data[0])))
 
@@ -425,7 +432,7 @@ def _test_model():
     input_shape = x_train.shape[1]
     output_shape = y_train.shape[1]
     epochs = 10
-    mini_batch_size = 10000
+    mini_batch_size = 256
     eta = 0.00000001
     
     '''
