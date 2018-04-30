@@ -3,6 +3,7 @@ from mpi4py import MPI
 from batch_helper import scatter_data, all_reduce_data
 from layers import l2_loss, fully_connected_layer, softmax_loss
 
+from sklearn import preprocessing
 
 class NeuralNetwork:
 
@@ -209,10 +210,10 @@ class NeuralNetwork:
                             print()
                             count += 1
                         '''
-                        # if test_data:
-                        #    print ("Epoch {0}/{1} complete - loss: {2}".format(e+1, epochs, self.evaluate(test_data, layers, loss)))
-                        # else:
-                        #    print ("Epoch {0}/{1} complete".format(e+1, epochs))
+                        if test_data:
+                           print ("Epoch {0}/{1} complete - loss: {2}".format(e+1, epochs, self.evaluate(test_data, layers, loss)))
+                        else:
+                           print ("Epoch {0}/{1} complete".format(e+1, epochs))
                 if rank == 0:
                     end = MPI.Wtime()
                     print("Total time was:", end - start)
@@ -323,6 +324,10 @@ def _test_batch():
     x = data[:,1:5]
     y = data[:,5].reshape(len(x), 1)
 
+    scaler = preprocessing.StandardScaler()
+    scaler.fit(x)
+    x = scaler.transform(x)
+
     x_train = x[:1200]
     y_train = y[:1200]
     x_test = x[1200:]
@@ -409,6 +414,7 @@ def _load_data(f, delimiter=","):
         data.append(sub)
         count += 1
     f.close()
+
     return np.array(data).reshape((len(data), len(data[0])))
 
 

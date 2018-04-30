@@ -56,8 +56,11 @@ class fully_connected_layer:
                 D = np.prod(x.shape[1:])
 
                 if self.activation == 'relu':
-                        x = np.where(x>0, x, 0)
+                        dout1 = np.where(pre_activation_out>0, dout, 0)
+                # print (dout[0] == dout1[0])
 
+                # dout = dout1
+                
                 x_flattened = np.reshape(x, (N,D))
 
                 if self.mask_w is not None:
