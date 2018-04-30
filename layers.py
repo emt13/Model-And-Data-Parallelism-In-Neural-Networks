@@ -8,8 +8,8 @@ class fully_connected_layer:
                 #self.b = np.random.randn(size_output)
                 self.w = np.ones((size_input, size_output))
                 self.b = np.ones(size_output)
-                self.mask_w = np.ones((size_input, size_output)) if mask == None else mask
-                self.mask_b = np.ones(size_output) if mask == None else mask[0]
+                self.mask_w = np.ones((size_input, size_output)) if mask is None else mask
+                self.mask_b = np.ones(size_output) if mask is None else mask[0]
                 assert self.mask_w.shape == self.w.shape
                 assert self.mask_b.shape == self.b.shape
                 self.cache = []

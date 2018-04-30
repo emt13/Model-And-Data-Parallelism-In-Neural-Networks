@@ -45,7 +45,7 @@ class NeuralNetwork:
                 
                 #TODO
                 # Create the layers themselves
-                layers, loss = self._init_layers()
+                layers, loss = self._init_layers(rank, size)
                
                 start = MPI.Wtime()
                 epochTimes = []
@@ -209,9 +209,9 @@ class NeuralNetwork:
                             print()
                             count += 1
                         '''
-                        #if test_data:
+                        # if test_data:
                         #    print ("Epoch {0}/{1} complete - loss: {2}".format(e+1, epochs, self.evaluate(test_data, layers, loss)))
-                        #else:
+                        # else:
                         #    print ("Epoch {0}/{1} complete".format(e+1, epochs))
                 if rank == 0:
                     end = MPI.Wtime()
@@ -252,7 +252,7 @@ class NeuralNetwork:
             
                 
 
-        def _init_layers(self, seed=0):
+        def _init_layers(self, rank=1, size=1, seed=0):
             layers = []
             loss = None 
             seed = 0
@@ -261,7 +261,8 @@ class NeuralNetwork:
                     # Important note here: every layer is initialized on each process.
                     # The initialization is random so: either we broadcast the weights and biases
                     # Or we add a seed in layer. For now, we chose the latter.
-                    layers.append(fully_connected_layer(layer[1],layer[2],seed))
+                    mask = _create_mask(rank, size, layer[1], layer[2])
+                    layers.append(fully_connected_layer(layer[1], layer[2], seed, mask))
                 else:
                     print(layer[0], "is not valid")
                     return []
@@ -274,7 +275,6 @@ class NeuralNetwork:
                 print("invalid loss layer")
                 return []
             return layers, loss
-             
 
 
 def _test():
@@ -411,8 +411,29 @@ def _load_data(f, delimiter=","):
     f.close()
     return np.array(data).reshape((len(data), len(data[0])))
 
+
+# nodes_model ???
+# rank: curr_rank, size: number of ranks
+# assumes size is divisible by size_output
+def _create_mask(rank, size, size_input, size_output, nodes_model=1):
+    if size == 1:
+        mask = None
+    else:
+        mask_base = np.zeros(size_output)
+        local_length = size_output / size
+        start_ind = int(local_length * rank)
+        end_ind = int(local_length * (rank + 1))
+        # print("length", local_length, "start", start_ind, "end", end_ind)
+        mask_base[start_ind:end_ind] = 1
+        mask = np.repeat(np.array([mask_base]), size_input, axis=0)
+
+    # print(mask_base)
+    # print(mask)
+    return mask
+
 def _test_model(): 
 
+    '''
     #data = np.loadtxt(open("Data/ethylene_methane.csv", "rb"), delimiter=",")
     data = _load_data(open("Data/ethylene_methane.csv", "r"))
     x = data[:,3:]
@@ -434,8 +455,10 @@ def _test_model():
     epochs = 10
     mini_batch_size = 256
     eta = 0.00000001
-    
     '''
+
+    
+
     # UCI airfoil test
     data = np.loadtxt(open("Data/airfoil_self_noise.dat", "rb"), delimiter="\t")    
     x = data[:,1:5]
@@ -452,10 +475,10 @@ def _test_model():
     
     input_shape = x.shape[1]
     output_shape = y.shape[1]
-    epochs = 100
+    epochs = 50
     mini_batch_size = 2
     eta = 0.00000000011
-    '''
+
     # We don't really care about nodes_model and nodes_batch for now 
     nn = NeuralNetwork(nodes_model=1, nodes_batch=2)
     
@@ -472,5 +495,5 @@ def _test_model():
     nn.train_model_parallelism(x_train, y_train, epochs, mini_batch_size,eta, test_data = test_data)
     
 if __name__=="__main__":
-    #_test_model()    
+    # _test_model()
     _test_batch()
