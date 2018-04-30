@@ -122,6 +122,9 @@ class NeuralNetwork:
                 
                 start = MPI.Wtime()
                 epochTimes = []   
+
+                time_scatter_total = 0
+                time_all_reduce_total = 0
                                
                 # for 1 ... epoch:
                 for e in range(epochs):
@@ -163,12 +166,14 @@ class NeuralNetwork:
                             print("all_x dims: ", all_x.shape[0])
                         """
                         
+                        time_scatter_total_start = MPI.Wtime()
             #           x = scatter_helper(minibatches[i], mb_dimension, comm, rank, size)
                         x_rank = scatter_data(all_x, (mini_batch_shapes[i], x_shape[1]) , comm, rank, size)
                         #print("*", rank, "* x", x_rank, mini_batch_shapes[i], x_shape[1])
                 
                 #       y = scatter_helper(minibatches[i], mb_dimension, comm, rank, size)
                         y_rank = scatter_data(all_y, (mini_batch_shapes[i], y_shape[1]) , comm, rank, size)
+                        time_scatter_total += MPI.Wtime() - time_scatter_total_start
                         #print("*", rank, "* y", y_rank, mini_batch_shapes[i], x_shape[1])
 
                         # The following if statement solves the problem when there is one single data to scatter on 2 processes. The second process will receive an empty data...
@@ -231,13 +236,14 @@ class NeuralNetwork:
                                 dbs.append(db)
                         
             #           allReduce(dws, size)
-            
+                        time_all_reduce_time_start = MPI.Wtime() 
                         reduced_dws = all_reduce_data(dws, comm, rank, size)
                         
                         #print(rank, "rdws", reduced_dws)
                         
             #           allReduce(dbs, size)
                         reduced_dbs = all_reduce_data(dbs, comm, rank, size)
+                        time_all_reduce_total += MPI.Wtime() - time_all_reduce_time_start
                         
                         """
                         #if rank == 0:
@@ -274,6 +280,8 @@ class NeuralNetwork:
                 if rank == 0:
                     end = MPI.Wtime()
                     print("Total time was:", end - start)
+                    print("Scatter time:", time_scatter_total)
+                    print("All reduce time:", time_all_reduce_total)
                     for i in range(len(epochTimes)):
                         print("  (" + str(i) + ")", epochTimes[i]) 
                     print()
@@ -516,5 +524,5 @@ def _test_model():
     nn.train_model_parallelism(x_train, y_train, epochs, mini_batch_size,eta, test_data = test_data)
     
 if __name__=="__main__":
-    _test_model()    
-    #_test_batch()
+    #_test_model()    
+    _test_batch()
