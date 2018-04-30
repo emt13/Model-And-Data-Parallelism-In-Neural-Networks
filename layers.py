@@ -1,18 +1,21 @@
 import numpy as np
 
 class fully_connected_layer:
-        def __init__(self, size_input, size_output, seed, mask=None):
+        def __init__(self, size_input, size_output, seed, mask=None, activation='relu'):
                 np.random.seed(seed)
                 #mask needed for model parellelism to zero out values held by other processes
                 #self.w = np.random.randn(size_input, size_output)
                 #self.b = np.random.randn(size_output)
                 self.w = np.ones((size_input, size_output))
                 self.b = np.ones(size_output)
-                self.mask_w = np.ones((size_input, size_output)) if mask is None else mask
-                self.mask_b = np.ones(size_output) if mask is None else mask[0]
-                assert self.mask_w.shape == self.w.shape
-                assert self.mask_b.shape == self.b.shape
+
+                self.mask_w = mask
+                self.mask_b = None if mask is None else mask[0]
+                assert self.mask_w is None or self.mask_w.shape == self.w.shape
+                assert self.mask_b is None or self.mask_b.shape == self.b.shape
+
                 self.cache = []
+                self.activation = activation
 
         def forward(self, x):
                 """
@@ -25,9 +28,16 @@ class fully_connected_layer:
                 N = x.shape[0]
                 D = np.prod(x.shape[1:])
                 x_flattened = np.reshape(x,(N,D))
-                out = np.dot(x, np.multiply(self.w, self.mask_w)) + self.b
+                if self.mask_w is not None:
+                        out = np.dot(x, np.multiply(self.w, self.mask_w)) + self.b
+                else:
+                        out = np.dot(x, self.w) + self.b
                 
-                self.cache = x
+                #apply relu
+                pre_activation_out = out
+                if self.activation == 'relu':
+                        out = np.maximum(0,out)
+                self.cache = x, pre_activation_out
                 return out
 
         def backward(self, dout):
@@ -41,15 +51,24 @@ class fully_connected_layer:
                 """
                 assert len(self.cache) != 0
 
-                x = self.cache
+                x, pre_activation_out = self.cache
                 N = x.shape[0]
                 D = np.prod(x.shape[1:])
+
+                if self.activation == 'relu':
+                        x = np.where(x>0, x, 0)
+
                 x_flattened = np.reshape(x, (N,D))
 
+                if self.mask_w is not None:
+                        dx_flattened = np.dot(dout, np.multiply(self.w.T, self.mask_w.T))
+                else:
+                        dx_flattened = np.dot(dout, self.w.T)
 
-                dx_flattened = np.dot(dout, np.multiply(self.w.T, self.mask_w.T))
                 dw = np.dot(dx_flattened.T, dout)
-                db = np.multiply(np.dot(dout.T, np.ones(N)), self.mask_b)
+                db = np.dot(dout.T, np.ones(N))
+                if self.mask_b is not None:
+                        db = np.multiply(db, self.mask_b)
                 dx = np.reshape(dx_flattened, x.shape)
 
                 return dx, dw, db
