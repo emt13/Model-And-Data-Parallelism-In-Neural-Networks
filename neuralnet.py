@@ -3,6 +3,7 @@ from mpi4py import MPI
 from batch_helper import scatter_data, all_reduce_data
 from layers import l2_loss, fully_connected_layer, softmax_loss
 
+
 class NeuralNetwork:
 
         def __init__(self, nodes_model = 1, nodes_batch = 1):
@@ -35,6 +36,7 @@ class NeuralNetwork:
                 y_shape = y.shape
 
                 mini_batch_shapes = [len(x[k:k + mini_batch_size]) for k in range(0, len(x), mini_batch_size)]
+                #print(mini_batch_shapes, mini_batch_size)
 
                 # mpi init
                 comm = MPI.COMM_WORLD
@@ -103,23 +105,22 @@ class NeuralNetwork:
                 """
                 x_shape = x.shape
                 y_shape = y.shape
-                #print("x:",x_shape)
-                #print("y:",y_shape)
 
                 mini_batch_shapes = [len(x[k:k + mini_batch_size]) for k in range(0, len(x), mini_batch_size)]
-                #print("mbs:", mini_batch_shapes, len(mini_batch_shapes))
-                 
+                
 
                 # mpi init
                 comm = MPI.COMM_WORLD
                 rank = comm.Get_rank()
                 size = comm.Get_size()
-                
+ 
+                if rank != 0:
+                    del x
+                    del y
+               
                 # Create the layers themselves
                 layers, loss = self._init_layers()
-                #print(layers)
-                #print("*", rank, "*", mini_batch_size, len(x))
-                
+               
                 start = MPI.Wtime()
                 epochTimes = []   
 
@@ -129,104 +130,47 @@ class NeuralNetwork:
                 # for 1 ... epoch:
                 for e in range(epochs):
                     eStart = MPI.Wtime()
-                #   if rank is 0, shuffle
                     if(rank==0):
-                        #print("\n\n ---- EPOCH", e)
+                        #print(e, eStart)
                         training_data = list(zip(list(x), list(y)))
                         n = len(training_data)
                         np.random.shuffle(training_data)
-                #       if rank is 0, break into minibatches
                         mini_batches =[training_data[k:k+mini_batch_size] for k in range(0, n, mini_batch_size)]
-                    
-                    # The following mini_batches are dummies. There are needed to go trhough the following for loop on each process
-                    # There might be a better way to do it though.
-                    #else:
-                    #    training_data = list(zip(list(x), list(y)))
-                    #    n = len(training_data)
-                    #    mini_batches = [training_data[k:k+mini_batch_size] for k in range(0, n, mini_batch_size)]
-                    
-                    #print("*", rank, "*", mini_batches)
-                   
-            #       for i in range(num_minibatches):
-                    # count_batch = 0 (for debugging purpose)
+                  
                     #for mini_batch in mini_batches:
                     for i in range(len(mini_batch_shapes)):
-                        #print("     - mini:", i)
                         
                         all_x = None
                         all_y = None
                         if rank == 0:
                             all_x = np.array([j[0] for j in mini_batches[i]])
                             all_y = np.array([j[1] for j in mini_batches[i]])
-                            #print(" -- all_x:", all_x)
-                            #print(" -- all_y:", all_y)
-                        
-                        """
-                        if rank == 1:
-                            print("all_x dims: ", all_x.shape[0])
-                        """
                         
                         time_scatter_total_start = MPI.Wtime()
-            #           x = scatter_helper(minibatches[i], mb_dimension, comm, rank, size)
                         x_rank = scatter_data(all_x, (mini_batch_shapes[i], x_shape[1]) , comm, rank, size)
-                        #print("*", rank, "* x", x_rank, mini_batch_shapes[i], x_shape[1])
                 
-                #       y = scatter_helper(minibatches[i], mb_dimension, comm, rank, size)
                         y_rank = scatter_data(all_y, (mini_batch_shapes[i], y_shape[1]) , comm, rank, size)
                         time_scatter_total += MPI.Wtime() - time_scatter_total_start
-                        #print("*", rank, "* y", y_rank, mini_batch_shapes[i], x_shape[1])
+                        #print("rank:", rank, "xshape", x_rank.shape, "yshape", y_rank.shape)
 
                         # The following if statement solves the problem when there is one single data to scatter on 2 processes. The second process will receive an empty data...
                         if x_rank.size != 0:                                              
-                #           all_zs = [(x)]
                             all_zs = [x_rank]
-                #           in = x
-                #           for layer in layers:
-                            # count_layer = 0 (for dubugging purpose)
                             for layer in layers:
-                #               out = layer.forward(in)
                                 z = layer.forward(x_rank)
-                #               all_zs.append(out)
                                 all_zs.append(z)
                                 x_rank = z
                                 
-                            #if rank== 0: 
-                            #    print("rank: ", rank, "count_batch", count_batch, "count_layer: ", count_layer, "w: ",layer.w)
-                                
-                                # count_layer +=1
-                                  
-                #           loss, dy = l2_loss(all_zs[-1], y) 
                             loss_value, dy = loss.loss(all_zs[-1], y_rank)
-                            #print("mb:", i, "loss:", loss_value, all_zs[-1]) 
-                            """
-                            if rank== 0: 
-                                print("dy", dy)
-                                print("loss", loss_value)
-                            """
                             
-                #           dws, dbs = [], []   
                             dws, dbs = [], []
-                #           for layer in reversed(layers):
                             for layer in reversed(layers):
-                #               dx, dw, db = layer.backwards(dy)
                                 dx, dw, db = layer.backward(dy)
                                 
-                                """
-                                #if rank== 0: 
-                                #    print("dw: ", dw)
-                                #    print("dx: ", dx)
-                                """
-                                
-                #               dy = dx
                                 dy = dx
-                #               dws.append(dw)
                                 dws.append(dw)
-                #               dbs.append(db)
                                 dbs.append(db)
                             
-                            
-                            #count_batch+=1
-                        #End if x_rank.size != 0:
                         else:    
                             dws, dbs = [], []
                             for layer in reversed(layers):
@@ -235,20 +179,11 @@ class NeuralNetwork:
                                 dws.append(dw)
                                 dbs.append(db)
                         
-            #           allReduce(dws, size)
                         time_all_reduce_time_start = MPI.Wtime() 
                         reduced_dws = all_reduce_data(dws, comm, rank, size)
-                        
-                        #print(rank, "rdws", reduced_dws)
-                        
-            #           allReduce(dbs, size)
+
                         reduced_dbs = all_reduce_data(dbs, comm, rank, size)
                         time_all_reduce_total += MPI.Wtime() - time_all_reduce_time_start
-                        
-                        """
-                        #if rank == 0:
-                        #    print("reduced_dws: ", reduced_dws)
-                        """
                         
                         L = len(layers)
 
@@ -262,6 +197,7 @@ class NeuralNetwork:
                     """
                     if rank == 0:
                         eEnd = MPI.Wtime()
+                        #print(" ", eEnd)
                         epochTimes.append(eEnd - eStart)
                         '''
                         count = 1
@@ -273,10 +209,10 @@ class NeuralNetwork:
                             print()
                             count += 1
                         '''
-                        if test_data:
-                            print ("Epoch {0}/{1} complete - loss: {2}".format(e+1, epochs, self.evaluate(test_data, layers, loss)))
-                        else:
-                            print ("Epoch {0}/{1} complete".format(e+1, epochs))
+                        #if test_data:
+                        #    print ("Epoch {0}/{1} complete - loss: {2}".format(e+1, epochs, self.evaluate(test_data, layers, loss)))
+                        #else:
+                        #    print ("Epoch {0}/{1} complete".format(e+1, epochs))
                 if rank == 0:
                     end = MPI.Wtime()
                     print("Total time was:", end - start)
@@ -357,7 +293,8 @@ def _test_batch():
 
     # UCI ethlyne test
     # huge test
-    data = np.loadtxt(open("Data/ethylene_methane.csv", "rb"), delimiter=",")
+    #data = np.loadtxt(open("Data/ethylene_methane.csv", "rb"), delimiter=",")
+    data = _load_data(open("Data/ethylene_methane.csv", "r"))
     x = data[:,3:]
     y = data[:,1:3]
     
@@ -458,8 +395,12 @@ def _test_batch():
     
 def _load_data(f, delimiter=","):
     data = []
+    count = 0
     for l in f:
         data.append([float(x) for x in l.split(delimiter)])
+        count += 1
+        #if count % 10000 == 0:
+        #    print("rank:", MPI.COMM_WORLD.Get_rank(), "count:", count)
     f.close()
     return np.array(data).reshape((len(data), len(data[0])))
 
