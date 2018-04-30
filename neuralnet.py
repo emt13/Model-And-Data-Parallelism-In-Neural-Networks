@@ -346,7 +346,7 @@ def _test():
 
 
 def _test_batch():
-    ''' 
+
     # UCI ethlyne test
     # huge test
     data = np.loadtxt(open("Data/ethylene_methane.csv", "rb"), delimiter=",")
@@ -369,9 +369,9 @@ def _test_batch():
     epochs = 10
     mini_batch_size = 10000
     eta = 0.00000001
-    '''
     
-     
+
+    ''' 
     # UCI airfoil test
     data = np.loadtxt(open("Data/airfoil_self_noise.dat", "rb"), delimiter="\t")    
     x = data[:,1:5]
@@ -393,7 +393,7 @@ def _test_batch():
     epochs = 100
     mini_batch_size = 128
     eta = 0.00000000011
-    
+    ''' 
     
     
     '''
@@ -449,6 +449,29 @@ def _test_batch():
     nn.train_batch_parallelism(x_train, y_train, epochs, mini_batch_size,eta, test_data = test_data)
     
 def _test_model(): 
+
+    data = np.loadtxt(open("Data/ethylene_methane.csv", "rb"), delimiter=",")
+    x = data[:,3:]
+    y = data[:,1:3]
+    
+    x_train = x[:int(len(x)*.8)]
+    y_train = y[:int(len(y)*.8)]
+    
+    x_test = x[int(len(x)*.8):]
+    y_test = y[int(len(y)*.8):]
+   
+    print(x.shape)
+    print(y.shape)
+
+    test_data = list(zip(list(x_test), list(y_test)))
+ 
+    input_shape = x_train.shape[1]
+    output_shape = y_train.shape[1]
+    epochs = 10
+    mini_batch_size = 10000
+    eta = 0.00000001
+    
+    '''
     # UCI airfoil test
     data = np.loadtxt(open("Data/airfoil_self_noise.dat", "rb"), delimiter="\t")    
     x = data[:,1:5]
@@ -468,13 +491,13 @@ def _test_model():
     epochs = 100
     mini_batch_size = 2
     eta = 0.00000000011
-    
+    '''
     # We don't really care about nodes_model and nodes_batch for now 
     nn = NeuralNetwork(nodes_model=1, nodes_batch=2)
     
-    nn.add_layer("fc", 4, 7)
+    nn.add_layer("fc", input_shape, 7)
     nn.add_layer("fc", 7, 8)
-    nn.add_layer("fc", 8, 1)
+    nn.add_layer("fc", 8, output_shape)
     nn.add_loss("l2")
     #nn.add_loss("softmax")
 
