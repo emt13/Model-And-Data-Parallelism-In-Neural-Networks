@@ -2,8 +2,9 @@ import numpy as np
 from mpi4py import MPI
 from batch_helper import scatter_data, all_reduce_data
 from layers import l2_loss, fully_connected_layer, softmax_loss
-
 from sklearn import preprocessing
+    
+import sys
 
 class NeuralNetwork:
 
@@ -52,6 +53,7 @@ class NeuralNetwork:
                 epochTimes = []
  
                 for e in range(epochs):
+                    print("starting epoch:",e)
                     eStart = MPI.Wtime()
                     training_data = list(zip(list(x), list(y)))
                     n = len(training_data)
@@ -84,10 +86,10 @@ class NeuralNetwork:
                             #TODO 
                             layer.apply_gradient(dw_rank, db_rank, eta, mini_batch_shapes[i])
                             
-                    if test_data:
-                        print ("Epoch {0}/{1} complete - loss: {2}".format(e+1, epochs, self.evaluate(test_data, layers, loss)))
-                    else:
-                        print ("Epoch {0}/{1} complete".format(e+1, epochs))
+                    #if test_data:
+                    #    print ("Epoch {0}/{1} complete - loss: {2}".format(e+1, epochs, self.evaluate(test_data, layers, loss)))
+                    #else:
+                    #    print ("Epoch {0}/{1} complete".format(e+1, epochs))
                     eEnd = MPI.Wtime()
                     epochTimes.append(eEnd - eStart)
         
@@ -130,6 +132,7 @@ class NeuralNetwork:
                                
                 # for 1 ... epoch:
                 for e in range(epochs):
+                    print("starting epoch:",e)
                     eStart = MPI.Wtime()
                     if(rank==0):
                         #print(e, eStart)
@@ -210,10 +213,10 @@ class NeuralNetwork:
                             print()
                             count += 1
                         '''
-                        if test_data:
-                           print ("Epoch {0}/{1} complete - loss: {2}".format(e+1, epochs, self.evaluate(test_data, layers, loss)))
-                        else:
-                           print ("Epoch {0}/{1} complete".format(e+1, epochs))
+                        #if test_data:
+                        #   print ("Epoch {0}/{1} complete - loss: {2}".format(e+1, epochs, self.evaluate(test_data, layers, loss)))
+                        #else:
+                        #   print ("Epoch {0}/{1} complete".format(e+1, epochs))
                 if rank == 0:
                     end = MPI.Wtime()
                     print("Total time was:", end - start)
@@ -499,7 +502,109 @@ def _test_model():
     #nn.add_loss("l2")
     
     nn.train_model_parallelism(x_train, y_train, epochs, mini_batch_size,eta, test_data = test_data)
+
+def _fetchData(dataset):
+    x, y = None, None
+    if dataset.lower() == "large":
+        data = _load_data(open("Data/ethylene_methane.csv", "r"), delimiter=",")
+        x = data[:,3:]
+        y = data[:,1:3]
+    elif dataset.lower() == "medium":
+        data = _load_data(open("Data/airfoil_self_noise.dat", "r"), delimiter="\t")
+        x = data[:,1:5]
+        y = data[:,5].reshape(len(x), 1)
+   
+    scaler = preprocessing.StandardScaler()
+    scaler.fit(x)
+    x = scaler.transform(x)
+ 
+    x_train = x[:int(len(x)*.8)]
+    y_train = y[:int(len(y)*.8)]
+    
+    x_test = x[int(len(x)*.8):]
+    y_test = y[int(len(y)*.8):]
+    
+   
+    return x_train, y_train, x_test, y_test
+   
+
+def main():
+    if len(sys.argv) < 6:
+        print("Input error, needs to be: python neuralnet.py <model, batch, both> <dataset (large, huge)> <num epochs> <mini batch size> <eta> <comma separated, no spaces number of neurons in each layer>")
+        return
+
+    batch_nodes = int(sys.argv[1])
+    model_nodes = int(sys.argv[2])
+    typeParallel = sys.argv[3]
+    dataset = sys.argv[4]
+    epochs = int(sys.argv[5])
+    mini_batch_size = int(sys.argv[6])
+    eta = float(sys.argv[7])
+    neurons = [int(x) for x in sys.argv[8].split(",")]
+    
+    rank = MPI.COMM_WORLD.Get_rank()
+
+    if rank == 0:
+        print("configured to run:")
+        print(" batch nodes", batch_nodes)
+        print(" model nodes", model_nodes)
+        print(" type:", typeParallel)
+        print(" dataset:", dataset)
+        print(" epochs:", epochs)
+        print(" mini batch size:", mini_batch_size)
+        print(" eta:", eta)
+        print(" neurons:", neurons)
+        
+        print("Starting test...")
+        print(" Fetching data...")
+    x_train, y_train, x_test, y_test = _fetchData(dataset)
+    test_data = list(zip(list(x_test), list(y_test)))
+
+    if rank == 0:
+        print(" succesfully fetched the data.")
+        print("  x_train shape:", x_train.shape)
+        print("  y_train shape:", y_train.shape)
+        print("  x_test shape:", x_test.shape)
+        print("  y_test shape:", y_test.shape)
+
+        print(" Creating the neural network...")
+    nn = NeuralNetwork(nodes_model=model_nodes, nodes_batch=batch_nodes)
+    
+    prevSize = x_train.shape[1]
+    for s in neurons:
+        nn.add_layer("fc", prevSize, s)
+        if rank == 0:
+            print("  added layer |", prevSize,"->", s)
+        prevSize = s
+    nn.add_layer("fc", prevSize, y_train.shape[1])   
+    
+    if rank == 0: 
+        print("  added output layer |", prevSize,"->",y_train.shape[1])
+    nn.add_loss("l2")
+    if rank == 0:
+        print("  added loss layer")
+        print(" Finished creating network.")
+        
+        print(" Beginning training the network...")
+    if typeParallel.lower() == "model":   
+        nn.train_model_parallelism(x_train, y_train, epochs, mini_batch_size,eta, test_data = test_data)
+    elif typeParallel.lower() == "batch":
+        nn.train_batch_parallelism(x_train, y_train, epochs, mini_batch_size, eta, test_data=test_data)
+    elif typeParallel.lower() == "both":
+        pass
+    else:
+        print("ERROR: need to use either model, batch, or both")
+
+    if rank == 0:
+        print("Finished test")
+
+
+     
+    
+
     
 if __name__=="__main__":
     # _test_model()
-    _test_batch()
+    #_test_batch()
+    
+   main() 
