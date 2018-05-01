@@ -70,7 +70,7 @@ class NeuralNetwork:
                         
                         for layer in layers:
                             z_rank = layer.forward(x_all)
-                            z_reduced = np.vstack(all_reduce_data(z_rank, comm, rank, size))
+                            z_reduced = all_reduce_data(z_rank, comm, rank, size)
                             all_zs_reduced.append(z_reduced)
                             x_all = z_reduced
                         
@@ -80,7 +80,7 @@ class NeuralNetwork:
                         for layer in reversed(layers):
                             #TODO
                             dx_rank, dw_rank, db_rank = layer.backward(dy)
-                            dx_reduced = np.vstack(all_reduce_data(dx_rank, comm, rank, size))
+                            dx_reduced = all_reduce_data(dx_rank, comm, rank, size)
                             dy = dx_reduced
                             
                             #TODO 
