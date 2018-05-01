@@ -59,7 +59,7 @@ class fully_connected_layer:
                         dout1 = np.where(pre_activation_out>0, dout, 0)
 
                 x_flattened = np.reshape(x, (N,D))
-
+                dx_flattened = np.dot(dout, self.w.T)
                 dw = np.dot(dx_flattened.T, dout)
                 if self.mask_w is not None:
                         dw = np.multiply(dw, self.mask_w)
