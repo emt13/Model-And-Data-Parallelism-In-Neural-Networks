@@ -281,127 +281,6 @@ class NeuralNetwork:
             return layers, loss
 
 
-def _test():
-    nn = NeuralNetwork(nodes_model=8, nodes_batch=1)
-
-    nn.add_layer("fc", 100, 90)
-    nn.add_layer("l12")
-    nn.add_layer("fc", 160, 20)
-    nn.add_layer("l12")
-    nn.add_layer("fc", 80, 50)
-    nn.add_layer("softmax")
-    print(nn.layers)    
-
-
-def _test_batch():
-    '''
-    # UCI ethlyne test
-    # huge test
-    #data = np.loadtxt(open("Data/ethylene_methane.csv", "rb"), delimiter=",")
-    data = _load_data(open("Data/ethylene_methane.csv", "r"))
-    x = data[:,3:]
-    y = data[:,1:3]
-    
-    x_train = x[:int(len(x)*.8)]
-    y_train = y[:int(len(y)*.8)]
-    
-    x_test = x[int(len(x)*.8):]
-    y_test = y[int(len(y)*.8):]
-   
-    print(x.shape)
-    print(y.shape)
-
-    test_data = list(zip(list(x_test), list(y_test)))
- 
-    input_shape = x_train.shape[1]
-    output_shape = y_train.shape[1]
-    epochs = 10
-    mini_batch_size = 10000
-    eta = 0.00000001
-    ''' 
-
-    #''' 
-    # UCI airfoil test
-    data = np.loadtxt(open("Data/airfoil_self_noise.dat", "rb"), delimiter="\t")    
-    #data = _load_data(open("Data/airfoil_self_noise.dat", "r"))
-    x = data[:,1:5]
-    y = data[:,5].reshape(len(x), 1)
-
-    scaler = preprocessing.StandardScaler()
-    scaler.fit(x)
-    x = scaler.transform(x)
-
-    x_train = x[:1200]
-    y_train = y[:1200]
-    x_test = x[1200:]
-    y_test = y[1200:]
-    print(x.shape)
-    print(y.reshape(len(y), 1).shape)
-
-    test_data = list(zip(list(x_test), list(y_test)))
-    
-    #full_batch_size_train = 20
-    #full_batch_size_test = 8
-    input_shape = x.shape[1]
-    output_shape = y.shape[1]
-    epochs = 10
-    mini_batch_size = 128
-    eta = 0.00000000011
-    #''' 
-    
-    
-    '''
-    # sinoid dataset 
-    full_batch_size_train = 20
-    full_batch_size_test = 8
-    input_shape = 2
-    output_shape = 1
-    epochs = 1000
-    mini_batch_size = 2
-    eta = 0.001
-    
- 
-    # This seed is necessary to initialize x so that the optimization converges
-    # Otherwise the network will diverge to inf
-    #np.random.seed(3753934041)
-    #np.random.seed(3)
-    x_train = np.random.randn(full_batch_size_train,input_shape)
-    y_train = np.transpose([np.sin(x_train[:,0])])
-    
-    x_test = np.random.randn(full_batch_size_test,input_shape)
-    y_test = np.transpose([np.sin(x_test[:,0])])
-    
-    test_data = list(zip(list(x_test), list(y_test)))
-    '''
-    ''' 
-    # toy dataset
-    mini_batch_size = 2
-    epochs = 10
-    eta = 0.001
-    
-    x_train = np.array([[1,2],[3,4]])
-    y_train = np.array([[3],[7]])
-    
-    x_test = np.array([[1,3]])
-    y_test = np.array([[4]]) 
-    
-    test_data = list(zip(list(x_test), list(y_test)))
-    '''
-    # We don't really care about nodes_model and nodes_batch for now 
-    nn = NeuralNetwork(nodes_model=1, nodes_batch=2)
-    
-    nn.add_layer("fc", x_train.shape[1], 7)
-    nn.add_layer("fc", 7, 8)
-    nn.add_layer("fc", 8, y_train.shape[1])
-    nn.add_loss("l2")
-    #nn.add_loss("softmax")
-
-    #nn.add_layer("fc", input_shape, 7)
-    #nn.add_layer("fc",7, output_shape)
-    #nn.add_loss("l2")
-    
-    nn.train_batch_parallelism(x_train, y_train, epochs, mini_batch_size,eta, test_data = test_data)
-    
 def _load_data(f, delimiter=","):
     data = []
     count = 0
@@ -440,69 +319,6 @@ def _create_mask(rank, size, size_input, size_output, nodes_model=1):
     # print(mask)
     return mask
 
-def _test_model(): 
-
-    '''
-    #data = np.loadtxt(open("Data/ethylene_methane.csv", "rb"), delimiter=",")
-    data = _load_data(open("Data/ethylene_methane.csv", "r"))
-    x = data[:,3:]
-    y = data[:,1:3]
-    
-    x_train = x[:int(len(x)*.8)]
-    y_train = y[:int(len(y)*.8)]
-    
-    x_test = x[int(len(x)*.8):]
-    y_test = y[int(len(y)*.8):]
-   
-    print(x.shape)
-    print(y.shape)
-
-    test_data = list(zip(list(x_test), list(y_test)))
- 
-    input_shape = x_train.shape[1]
-    output_shape = y_train.shape[1]
-    epochs = 10
-    mini_batch_size = 256
-    eta = 0.00000001
-    '''
-
-    
-
-    # UCI airfoil test
-    data = np.loadtxt(open("Data/airfoil_self_noise.dat", "rb"), delimiter="\t")    
-    x = data[:,1:5]
-    y = data[:,5].reshape(len(x), 1)
-
-    x_train = x[:1200]
-    y_train = y[:1200]
-    x_test = x[1200:]
-    y_test = y[1200:]
-    print(x.shape)
-    print(y.reshape(len(y), 1).shape)
-
-    test_data = list(zip(list(x_test), list(y_test)))
-    
-    input_shape = x.shape[1]
-    output_shape = y.shape[1]
-    epochs = 50
-    mini_batch_size = 2
-    eta = 0.00000000011
-
-    # We don't really care about nodes_model and nodes_batch for now 
-    nn = NeuralNetwork(nodes_model=1, nodes_batch=2)
-    
-    nn.add_layer("fc", input_shape, 7)
-    nn.add_layer("fc", 7, 8)
-    nn.add_layer("fc", 8, output_shape)
-    nn.add_loss("l2")
-    #nn.add_loss("softmax")
-
-    #nn.add_layer("fc", input_shape, 7)
-    #nn.add_layer("fc",7, output_shape)
-    #nn.add_loss("l2")
-    
-    nn.train_model_parallelism(x_train, y_train, epochs, mini_batch_size,eta, test_data = test_data)
-
 def _fetchData(dataset):
     x, y = None, None
     if dataset.lower() == "large":
@@ -513,6 +329,9 @@ def _fetchData(dataset):
         data = _load_data(open("Data/airfoil_self_noise.dat", "r"), delimiter="\t")
         x = data[:,1:5]
         y = data[:,5].reshape(len(x), 1)
+    elif dataset.lower() == "toy":
+        x = np.random.randn(100, 2)
+        y = np.transpose([np.sin(x[:,0])])
    
     scaler = preprocessing.StandardScaler()
     scaler.fit(x)
@@ -528,6 +347,7 @@ def _fetchData(dataset):
     return x_train, y_train, x_test, y_test
    
 
+# has all of the testing code
 def main():
     if len(sys.argv) < 6:
         print("Input error, needs to be: python neuralnet.py <model, batch, both> <dataset (large, huge)> <num epochs> <mini batch size> <eta> <comma separated, no spaces number of neurons in each layer>")
@@ -572,10 +392,10 @@ def main():
     
     prevSize = x_train.shape[1]
     for s in neurons:
-        nn.add_layer("fc", prevSize, s)
+        nn.add_layer("fc", prevSize, s // model_nodes)
         if rank == 0:
-            print("  added layer |", prevSize,"->", s)
-        prevSize = s
+            print("  added layer |", prevSize,"->", s // model_nodes)
+        prevSize = s // model_nodes
     nn.add_layer("fc", prevSize, y_train.shape[1])   
     
     if rank == 0: 
@@ -598,13 +418,10 @@ def main():
     if rank == 0:
         print("Finished test")
 
-
-     
-    
-
-    
 if __name__=="__main__":
-    # _test_model()
-    #_test_batch()
-    
    main() 
+
+
+
+
+
