@@ -3,8 +3,9 @@ from mpi4py import MPI
 from batch_helper import scatter_data, all_reduce_data
 from model_helper import all_gather_data
 from layers import l2_loss, fully_connected_layer, softmax_loss
-
 from sklearn import preprocessing
+    
+import sys
 
 class NeuralNetwork:
 
@@ -53,6 +54,7 @@ class NeuralNetwork:
                 epochTimes = []
  
                 for e in range(epochs):
+                    print("starting epoch:",e)
                     eStart = MPI.Wtime()
                     training_data = list(zip(list(x), list(y)))
                     n = len(training_data)
@@ -84,15 +86,15 @@ class NeuralNetwork:
                         
                         loss_value, dy = loss.loss(all_zs_gathered[-1], y_all)
                         
-                        i=-1                
+                        j=-1                
                         for layer in reversed(layers):
                             if layer.w.size != 0:
                                 dy_slice = slice(dy, rank , size)
                                 dx_rank, dw_rank, db_rank = layer.backward(dy_slice)
 
                             else:
-                                dx_rank = np.zeros(dims[i])
-                            i = i-1
+                                dx_rank = np.zeros(dims[j])
+                            j = j-1
 
 
                             dx_reduced = all_reduce_data([dx_rank], comm, rank, size)[0]
@@ -101,6 +103,7 @@ class NeuralNetwork:
                             if layer.w.size != 0:
                                 layer.apply_gradient(dw_rank, db_rank, eta, mini_batch_shapes[i])
                     
+                    test_data = None
                     if rank == 0:          
                         if test_data:
                             print ("Epoch {0}/{1} complete - loss: {2}".format(e+1, epochs, self.evaluate(test_data, layers, loss)))
@@ -145,9 +148,14 @@ class NeuralNetwork:
 
                 time_scatter_total = 0
                 time_all_reduce_total = 0
-                               
+                
+                #print(x)
+                #print(y)
+                #print()
+       
                 # for 1 ... epoch:
                 for e in range(epochs):
+                    print("starting epoch:",e)
                     eStart = MPI.Wtime()
                     if(rank==0):
                         #print(e, eStart)
@@ -167,8 +175,10 @@ class NeuralNetwork:
                         
                         time_scatter_total_start = MPI.Wtime()
                         x_rank = scatter_data(all_x, (mini_batch_shapes[i], x_shape[1]) , comm, rank, size)
+                        #print('x',x_rank)
                 
                         y_rank = scatter_data(all_y, (mini_batch_shapes[i], y_shape[1]) , comm, rank, size)
+                        #print('y', y_rank)
                         time_scatter_total += MPI.Wtime() - time_scatter_total_start
                         #print("rank:", rank, "xshape", x_rank.shape, "yshape", y_rank.shape)
 
@@ -177,11 +187,14 @@ class NeuralNetwork:
                             all_zs = [x_rank]
                             for layer in layers:
                                 z = layer.forward(x_rank)
+                                #print(" -- ", z.shape, z)
                                 all_zs.append(z)
                                 x_rank = z
-                                
-                            loss_value, dy = loss.loss(all_zs[-1], y_rank)
                             
+                            loss_value, dy = loss.loss(all_zs[-1], y_rank)
+                            #print(all_zs[-1])
+                            
+                            #print(all_zs[-1], dy.shape) 
                             dws, dbs = [], []
                             for layer in reversed(layers):
                                 dx, dw, db = layer.backward(dy)
@@ -228,10 +241,10 @@ class NeuralNetwork:
                             print()
                             count += 1
                         '''
-                        if test_data:
-                           print ("Epoch {0}/{1} complete - loss: {2}".format(e+1, epochs, self.evaluate(test_data, layers, loss)))
-                        else:
-                           print ("Epoch {0}/{1} complete".format(e+1, epochs))
+                        #if test_data:
+                        #   print ("Epoch {0}/{1} complete - loss: {2}".format(e+1, epochs, self.evaluate(test_data, layers, loss)))
+                        #else:
+                        #   print ("Epoch {0}/{1} complete".format(e+1, epochs))
                 if rank == 0:
                     end = MPI.Wtime()
                     print("Total time was:", end - start)
@@ -376,127 +389,6 @@ class NeuralNetwork:
             return layers, loss
 
 
-def _test():
-    nn = NeuralNetwork(nodes_model=8, nodes_batch=1)
-
-    nn.add_layer("fc", 100, 90)
-    nn.add_layer("l12")
-    nn.add_layer("fc", 160, 20)
-    nn.add_layer("l12")
-    nn.add_layer("fc", 80, 50)
-    nn.add_layer("softmax")
-    print(nn.layers)    
-
-
-def _test_batch():
-    '''
-    # UCI ethlyne test
-    # huge test
-    #data = np.loadtxt(open("Data/ethylene_methane.csv", "rb"), delimiter=",")
-    data = _load_data(open("Data/ethylene_methane.csv", "r"))
-    x = data[:,3:]
-    y = data[:,1:3]
-    
-    x_train = x[:int(len(x)*.8)]
-    y_train = y[:int(len(y)*.8)]
-    
-    x_test = x[int(len(x)*.8):]
-    y_test = y[int(len(y)*.8):]
-   
-    print(x.shape)
-    print(y.shape)
-
-    test_data = list(zip(list(x_test), list(y_test)))
- 
-    input_shape = x_train.shape[1]
-    output_shape = y_train.shape[1]
-    epochs = 10
-    mini_batch_size = 10000
-    eta = 0.00000001
-    ''' 
-
-    #''' 
-    # UCI airfoil test
-    data = np.loadtxt(open("Data/airfoil_self_noise.dat", "rb"), delimiter="\t")    
-    #data = _load_data(open("Data/airfoil_self_noise.dat", "r"))
-    x = data[:,1:5]
-    y = data[:,5].reshape(len(x), 1)
-
-    scaler = preprocessing.StandardScaler()
-    scaler.fit(x)
-    x = scaler.transform(x)
-
-    x_train = x[:1200]
-    y_train = y[:1200]
-    x_test = x[1200:]
-    y_test = y[1200:]
-    print(x.shape)
-    print(y.reshape(len(y), 1).shape)
-
-    test_data = list(zip(list(x_test), list(y_test)))
-    
-    #full_batch_size_train = 20
-    #full_batch_size_test = 8
-    input_shape = x.shape[1]
-    output_shape = y.shape[1]
-    epochs = 10
-    mini_batch_size = 128
-    eta = 0.00000000011
-    #''' 
-    
-    
-    '''
-    # sinoid dataset 
-    full_batch_size_train = 20
-    full_batch_size_test = 8
-    input_shape = 2
-    output_shape = 1
-    epochs = 1000
-    mini_batch_size = 2
-    eta = 0.001
-    
- 
-    # This seed is necessary to initialize x so that the optimization converges
-    # Otherwise the network will diverge to inf
-    #np.random.seed(3753934041)
-    #np.random.seed(3)
-    x_train = np.random.randn(full_batch_size_train,input_shape)
-    y_train = np.transpose([np.sin(x_train[:,0])])
-    
-    x_test = np.random.randn(full_batch_size_test,input_shape)
-    y_test = np.transpose([np.sin(x_test[:,0])])
-    
-    test_data = list(zip(list(x_test), list(y_test)))
-    '''
-    ''' 
-    # toy dataset
-    mini_batch_size = 2
-    epochs = 10
-    eta = 0.001
-    
-    x_train = np.array([[1,2],[3,4]])
-    y_train = np.array([[3],[7]])
-    
-    x_test = np.array([[1,3]])
-    y_test = np.array([[4]]) 
-    
-    test_data = list(zip(list(x_test), list(y_test)))
-    '''
-    # We don't really care about nodes_model and nodes_batch for now 
-    nn = NeuralNetwork(nodes_model=1, nodes_batch=2)
-    
-    nn.add_layer("fc", x_train.shape[1], 7)
-    nn.add_layer("fc", 7, 8)
-    nn.add_layer("fc", 8, y_train.shape[1])
-    nn.add_loss("l2")
-    #nn.add_loss("softmax")
-
-    #nn.add_layer("fc", input_shape, 7)
-    #nn.add_layer("fc",7, output_shape)
-    #nn.add_loss("l2")
-    
-    nn.train_batch_parallelism(x_train, y_train, epochs, mini_batch_size,eta, test_data = test_data)
-    
 def _load_data(f, delimiter=","):
     data = []
     count = 0
@@ -548,69 +440,111 @@ def _create_mask(model_split, model_nodes, size_input, size_output):
     # print(mask)
     return mask
 
-def _test_model(): 
-
-    '''
-    #data = np.loadtxt(open("Data/ethylene_methane.csv", "rb"), delimiter=",")
-    data = _load_data(open("Data/ethylene_methane.csv", "r"))
-    x = data[:,3:]
-    y = data[:,1:3]
-    
+def _fetchData(dataset):
+    x, y = None, None
+    if dataset.lower() == "large":
+        data = _load_data(open("Data/ethylene_methane.csv", "r"), delimiter=",")
+        x = data[:,3:]
+        y = data[:,1:3]
+    elif dataset.lower() == "medium":
+        data = _load_data(open("Data/airfoil_self_noise.dat", "r"), delimiter="\t")
+        x = data[:,1:5]
+        y = data[:,5].reshape(len(x), 1)
+    elif dataset.lower() == "toy":
+        x = np.random.randn(100, 2)
+        y = np.transpose([np.sin(x[:,0])])
+    elif dataset.lower() == "basic":
+        x = np.array([[1,2,3],[3,4,5],[5,6,7]])
+        y = np.array([[6],[12],[18]])  
+ 
+    #scaler = preprocessing.StandardScaler()
+    #scaler.fit(x)
+    #x = scaler.transform(x)
+ 
     x_train = x[:int(len(x)*.8)]
     y_train = y[:int(len(y)*.8)]
     
     x_test = x[int(len(x)*.8):]
     y_test = y[int(len(y)*.8):]
    
-    print(x.shape)
-    print(y.shape)
+    return x_train, y_train, x_test, y_test
+   
 
+# has all of the testing code
+def main():
+    if len(sys.argv) < 6:
+        print("Input error, needs to be: python neuralnet.py <model, batch, both> <dataset (large, huge)> <num epochs> <mini batch size> <eta> <comma separated, no spaces number of neurons in each layer>")
+        return
+
+    batch_nodes = int(sys.argv[1])
+    model_nodes = int(sys.argv[2])
+    typeParallel = sys.argv[3]
+    dataset = sys.argv[4]
+    epochs = int(sys.argv[5])
+    mini_batch_size = int(sys.argv[6])
+    eta = float(sys.argv[7])
+    neurons = [int(x) for x in sys.argv[8].split(",")]
+    
+    rank = MPI.COMM_WORLD.Get_rank()
+
+    if rank == 0:
+        print("configured to run:")
+        print(" batch nodes", batch_nodes)
+        print(" model nodes", model_nodes)
+        print(" type:", typeParallel)
+        print(" dataset:", dataset)
+        print(" epochs:", epochs)
+        print(" mini batch size:", mini_batch_size)
+        print(" eta:", eta)
+        print(" neurons:", neurons)
+        
+        print("Starting test...")
+        print(" Fetching data...")
+    x_train, y_train, x_test, y_test = _fetchData(dataset)
     test_data = list(zip(list(x_test), list(y_test)))
- 
-    input_shape = x_train.shape[1]
-    output_shape = y_train.shape[1]
-    epochs = 10
-    mini_batch_size = 256
-    eta = 0.00000001
-    '''
 
+    if rank == 0:
+        print(" succesfully fetched the data.")
+        print("  x_train shape:", x_train.shape)
+        print("  y_train shape:", y_train.shape)
+        print("  x_test shape:", x_test.shape)
+        print("  y_test shape:", y_test.shape)
+
+        print(" Creating the neural network...")
+    nn = NeuralNetwork(nodes_model=model_nodes, nodes_batch=batch_nodes)
     
-
-    # UCI airfoil test
-    data = np.loadtxt(open("Data/airfoil_self_noise.dat", "rb"), delimiter="\t")    
-    x = data[:,1:5]
-    y = data[:,5].reshape(len(x), 1)
-
-    x_train = x[:1200]
-    y_train = y[:1200]
-    x_test = x[1200:]
-    y_test = y[1200:]
-    print(x.shape)
-    print(y.reshape(len(y), 1).shape)
-
-    test_data = list(zip(list(x_test), list(y_test)))
+    prevSize = x_train.shape[1]
+    for s in neurons:
+        nn.add_layer("fc", prevSize, s // model_nodes)
+        if rank == 0:
+            print("  added layer |", prevSize,"->", s // model_nodes)
+        prevSize = s // model_nodes
+    nn.add_layer("fc", prevSize, y_train.shape[1])   
     
-    input_shape = x.shape[1]
-    output_shape = y.shape[1]
-    epochs = 10
-    mini_batch_size = 2
-    eta = 0.0000001
-
-    # We don't really care about nodes_model and nodes_batch for now 
-    nn = NeuralNetwork(nodes_model=1, nodes_batch=2)
-    
-    nn.add_layer("fc", input_shape, 6)
-    nn.add_layer("fc", 6, 8)
-    nn.add_layer("fc", 8, output_shape)
+    if rank == 0: 
+        print("  added output layer |", prevSize,"->",y_train.shape[1])
     nn.add_loss("l2")
-    #nn.add_loss("softmax")
+    if rank == 0:
+        print("  added loss layer")
+        print(" Finished creating network.")
+        
+        print(" Beginning training the network...")
+    if typeParallel.lower() == "model":   
+        nn.train_model_parallelism(x_train, y_train, epochs, mini_batch_size,eta, test_data = test_data)
+    elif typeParallel.lower() == "batch":
+        nn.train_batch_parallelism(x_train, y_train, epochs, mini_batch_size, eta, test_data=test_data)
+    elif typeParallel.lower() == "both":
+        pass
+    else:
+        print("ERROR: need to use either model, batch, or both")
 
-    #nn.add_layer("fc", input_shape, 7)
-    #nn.add_layer("fc",7, output_shape)
-    #nn.add_loss("l2")
-    
-    nn.train_model_parallelism(x_train, y_train, epochs, mini_batch_size,eta, test_data = None)
-    
+    if rank == 0:
+        print("Finished test")
+
 if __name__=="__main__":
-    # _test_model()
-    _test_model()
+   main() 
+
+
+
+
+
