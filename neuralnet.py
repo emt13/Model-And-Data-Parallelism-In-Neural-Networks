@@ -1,6 +1,7 @@
 import numpy as np
 from mpi4py import MPI
 from batch_helper import scatter_data, all_reduce_data
+from model_helper import all_gather_data
 from layers import l2_loss, fully_connected_layer, softmax_loss
 
 from sklearn import preprocessing
@@ -64,32 +65,49 @@ class NeuralNetwork:
                         # all_variable referes to a lsit of variables from each layer
                         x_all = np.array([j[0] for j in mini_batches[i]])
                         y_all = np.array([j[1] for j in mini_batches[i]])
-                        all_zs_reduced = [x_all]
-                        
+                        all_zs_gathered = [x_all]
+
+                        # Remember the dimensions for the backward pass
+                        # to handle the case where layer.w is empty in the backward pass
+                        dims = []
                         for layer in layers:
-                            z_rank = layer.forward(x_all)
-                            z_reduced = all_reduce_data(z_rank, comm, rank, size)
-                            all_zs_reduced.append(z_reduced)
-                            x_all = z_reduced
+                            if layer.w.size != 0:
+                                z_rank = layer.forward(x_all)
+                            else: 
+                                z_rank = np.array([]).reshape((0,0))
+
+                            #z_reduced = all_reduce_data(z_rank, comm, rank, size)
+                            z_gathered = np.transpose(all_gather_data(np.transpose(z_rank), comm, rank, size))
+                            all_zs_gathered.append(z_gathered)
+                            dims.append(x_all.shape)
+                            x_all = z_gathered
                         
-                        loss_value, dy = loss.loss(all_zs_reduced[-1], y_all)
+                        loss_value, dy = loss.loss(all_zs_gathered[-1], y_all)
                         
-                        
+                        i=-1                
                         for layer in reversed(layers):
-                            #TODO
-                            dx_rank, dw_rank, db_rank = layer.backward(dy)
-                            dx_reduced = all_reduce_data(dx_rank, comm, rank, size)
+                            if layer.w.size != 0:
+                                dy_slice = slice(dy, rank , size)
+                                dx_rank, dw_rank, db_rank = layer.backward(dy_slice)
+
+                            else:
+                                dx_rank = np.zeros(dims[i])
+                            i = i-1
+
+
+                            dx_reduced = all_reduce_data([dx_rank], comm, rank, size)[0]
                             dy = dx_reduced
                             
-                            #TODO 
-                            layer.apply_gradient(dw_rank, db_rank, eta, mini_batch_shapes[i])
-                            
-                    if test_data:
-                        print ("Epoch {0}/{1} complete - loss: {2}".format(e+1, epochs, self.evaluate(test_data, layers, loss)))
-                    else:
-                        print ("Epoch {0}/{1} complete".format(e+1, epochs))
-                    eEnd = MPI.Wtime()
-                    epochTimes.append(eEnd - eStart)
+                            if layer.w.size != 0:
+                                layer.apply_gradient(dw_rank, db_rank, eta, mini_batch_shapes[i])
+                    
+                    if rank == 0:          
+                        if test_data:
+                            print ("Epoch {0}/{1} complete - loss: {2}".format(e+1, epochs, self.evaluate(test_data, layers, loss)))
+                        else:
+                            print ("Epoch {0}/{1} complete - training loss: {2}".format(e+1, epochs, loss_value))
+                        eEnd = MPI.Wtime()
+                        epochTimes.append(eEnd - eStart)
         
                 if rank == 0:
                     end = MPI.Wtime()
@@ -222,6 +240,82 @@ class NeuralNetwork:
                     for i in range(len(epochTimes)):
                         print("  (" + str(i) + ")", epochTimes[i]) 
                     print()
+
+        def train_integrated_parallelism(self, x, y, epochs, mini_batch_size, eta, test_data=None):
+                """
+                Training procedure for integrated batch and model parallelism
+                """
+                x_shape = x.shape
+                y_shape = y.shape  
+
+                mini_batch_shapes = [len(x[k:k + mini_batch_size]) for k in range(0, len(x), mini_batch_size)]
+
+                # mpi init
+                comm = MPI.COMM_WORLD
+                rank = comm.Get_rank()
+                size = comm.Get_size()
+
+                # Convention: "batch-wise" major order
+                batch_split = rank // self.nodes_batch
+                model_split = rank % self.nodes_model
+
+                if rank != 0:
+                    del x
+                    del y
+
+                layers, loss = self._init_layers(model_split, self.nodes_model)
+
+                for e in range(epochs):
+                    if(rank==0):
+                        training_data = list(zip(list(x), list(y)))
+                        n = len(training_data)
+                        np.random.shuffle(training_data)
+                        mini_batches =[training_data[k:k+mini_batch_size] for k in range(0, n, mini_batch_size)]
+
+                    for i in range(len(mini_batch_shapes)):
+                        all_x = None
+                        all_y = None
+                        if rank == 0:
+                            all_x = np.array([j[0] for j in mini_batches[i]])
+                            all_y = np.array([j[1] for j in mini_batches[i]])
+                        
+                        #TODO
+                        x_batch_split = scatter_data(all_x, (mini_batch_shapes[i], x_shape[1]) , comm, rank, size)
+                        y_batch_split = scatter_data(all_y, (mini_batch_shapes[i], y_shape[1]) , comm, rank, size)
+
+                        if x_batch_split.size != 0 :
+                            all_zs_batch_split = [x_batch_split]
+
+                            for layer in layers:
+                                z_rank = layer.forward(x_batch_split)
+                                
+                                #TODO
+                                z_batch_split = all_reduce_data(z_rank)
+                                all_zs_batch_split.append(z_batch_split)
+                                x_batch_split = z_batch_split
+
+                            loss_value, dy_batch_split = loss.loss(all_zs_batch_split[-1], y_batch_split)
+
+                            for layer in reversed(layer):
+                                dx_rank, dw_rank, db_rank = layer.backward(dy_batch_split) 
+
+                                # TODO
+                                dx_batch_split = all_reduce_data(dx_rank)
+                                dy_batch_split = dx_batch_split
+                                #TODO
+                                dw_model_split = all_reduce_data(dw_rank)
+                                #TODO
+                                db_model_split = all_reduce_data(db_rank)
+
+                                layer.apply_gradient(dw_model_split, db_model_split, eta, mini_batch_shapes[i])
+
+                        else:
+                            #TODO
+                            pass
+
+
+
+
                 
         def evaluate(self, test_data, layers, loss):
             test_results = [(self.feedforward(np.array([x_test]), layers), y_test)
@@ -253,21 +347,25 @@ class NeuralNetwork:
             
                 
 
-        def _init_layers(self, rank=1, size=1, seed=0):
+        def _init_layers(self, model_split=1, model_nodes=1):
             layers = []
             loss = None 
-            seed = 0
+            l = 0
             for layer in self.layers:
                 if layer[0] == "fc":
                     # Important note here: every layer is initialized on each process.
                     # The initialization is random so: either we broadcast the weights and biases
                     # Or we add a seed in layer. For now, we chose the latter.
-                    mask = _create_mask(rank, size, layer[1], layer[2])
-                    layers.append(fully_connected_layer(layer[1], layer[2], seed, mask))
+                    output_size = layer[2] // model_nodes
+                    if model_split < layer[2] % model_nodes:
+                        output_size +=1
+
+                    layers.append(fully_connected_layer(layer[1], output_size, l*model_nodes+model_split))
+                
                 else:
                     print(layer[0], "is not valid")
                     return []
-                seed += 1
+                l += 1
             if self.loss == "l2":
                 loss = l2_loss()
             elif self.loss == "softmax":
@@ -418,10 +516,23 @@ def _load_data(f, delimiter=","):
     return np.array(data).reshape((len(data), len(data[0])))
 
 
-# nodes_model ???
+def slice(dy, model_split, model_nodes):
+    shape = dy.shape
+    features_dim = shape[1]
+    window_size = features_dim // model_nodes #3
+    start_ind = window_size * model_split #3*2 = 6
+    start_ind = start_ind + min(features_dim % (model_nodes),model_split)
+    end_ind = start_ind + window_size
+    if model_split < features_dim%model_nodes: 
+        end_ind = end_ind + 1
+    return(dy[:,start_ind:end_ind])
+    
+
+
+
 # rank: curr_rank, size: number of ranks
 # assumes size is divisible by size_output
-def _create_mask(rank, size, size_input, size_output, nodes_model=1):
+def _create_mask(model_split, model_nodes, size_input, size_output):
     if size == 1:
         mask = None
     else:
@@ -481,15 +592,15 @@ def _test_model():
     
     input_shape = x.shape[1]
     output_shape = y.shape[1]
-    epochs = 50
+    epochs = 10
     mini_batch_size = 2
-    eta = 0.00000000011
+    eta = 0.0000001
 
     # We don't really care about nodes_model and nodes_batch for now 
     nn = NeuralNetwork(nodes_model=1, nodes_batch=2)
     
-    nn.add_layer("fc", input_shape, 7)
-    nn.add_layer("fc", 7, 8)
+    nn.add_layer("fc", input_shape, 6)
+    nn.add_layer("fc", 6, 8)
     nn.add_layer("fc", 8, output_shape)
     nn.add_loss("l2")
     #nn.add_loss("softmax")
@@ -498,8 +609,8 @@ def _test_model():
     #nn.add_layer("fc",7, output_shape)
     #nn.add_loss("l2")
     
-    nn.train_model_parallelism(x_train, y_train, epochs, mini_batch_size,eta, test_data = test_data)
+    nn.train_model_parallelism(x_train, y_train, epochs, mini_batch_size,eta, test_data = None)
     
 if __name__=="__main__":
     # _test_model()
-    _test_batch()
+    _test_model()
