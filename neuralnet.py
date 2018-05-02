@@ -129,7 +129,11 @@ class NeuralNetwork:
 
                 time_scatter_total = 0
                 time_all_reduce_total = 0
-                               
+                
+                #print(x)
+                #print(y)
+                #print()
+       
                 # for 1 ... epoch:
                 for e in range(epochs):
                     print("starting epoch:",e)
@@ -152,8 +156,10 @@ class NeuralNetwork:
                         
                         time_scatter_total_start = MPI.Wtime()
                         x_rank = scatter_data(all_x, (mini_batch_shapes[i], x_shape[1]) , comm, rank, size)
+                        #print('x',x_rank)
                 
                         y_rank = scatter_data(all_y, (mini_batch_shapes[i], y_shape[1]) , comm, rank, size)
+                        #print('y', y_rank)
                         time_scatter_total += MPI.Wtime() - time_scatter_total_start
                         #print("rank:", rank, "xshape", x_rank.shape, "yshape", y_rank.shape)
 
@@ -162,11 +168,14 @@ class NeuralNetwork:
                             all_zs = [x_rank]
                             for layer in layers:
                                 z = layer.forward(x_rank)
+                                #print(" -- ", z.shape, z)
                                 all_zs.append(z)
                                 x_rank = z
-                                
-                            loss_value, dy = loss.loss(all_zs[-1], y_rank)
                             
+                            loss_value, dy = loss.loss(all_zs[-1], y_rank)
+                            #print(all_zs[-1])
+                            
+                            #print(all_zs[-1], dy.shape) 
                             dws, dbs = [], []
                             for layer in reversed(layers):
                                 dx, dw, db = layer.backward(dy)
@@ -332,17 +341,19 @@ def _fetchData(dataset):
     elif dataset.lower() == "toy":
         x = np.random.randn(100, 2)
         y = np.transpose([np.sin(x[:,0])])
-   
-    scaler = preprocessing.StandardScaler()
-    scaler.fit(x)
-    x = scaler.transform(x)
+    elif dataset.lower() == "basic":
+        x = np.array([[1,2,3],[3,4,5],[5,6,7]])
+        y = np.array([[6],[12],[18]])  
+ 
+    #scaler = preprocessing.StandardScaler()
+    #scaler.fit(x)
+    #x = scaler.transform(x)
  
     x_train = x[:int(len(x)*.8)]
     y_train = y[:int(len(y)*.8)]
     
     x_test = x[int(len(x)*.8):]
     y_test = y[int(len(y)*.8):]
-    
    
     return x_train, y_train, x_test, y_test
    
