@@ -69,10 +69,49 @@ def scatter_broadcast(data, datadims, batch_split, nodes_model, nodes_batch, com
 	"""
 
 if __name__ == "__main__":
+	
+	###Testing some communicators
 	comm = MPI.COMM_WORLD
 	rank = comm.Get_rank()
 	size = comm.Get_size()
 
+	color = rank % 3
+
+	comm2 = MPI.Comm.Split(comm, color, rank)
+
+	rank2 = comm2.Get_rank()
+	
+	if (rank == 0):
+		print("rank:", rank, "rank2", rank2)
+		comm.Barrier()
+
+	if (rank == 1):
+		print("rank:", rank, "rank2", rank2)
+		comm.Barrier()
+
+	if (rank == 2):
+		print("rank:", rank, "rank2", rank2)
+		comm.Barrier()
+
+	if (rank == 3):
+		print("rank:", rank, "rank2", rank2)
+		comm.Barrier()
+
+	if (rank == 4):
+		print("rank:", rank, "rank2", rank2)
+		comm.Barrier()
+
+	if (rank == 5):
+		print("rank:", rank, "rank2", rank2)
+		comm.Barrier()
+	
+
+
+
+
+
+	""" 
+	### Testing scatter_brodcast
 	nodes_model = 3
 	nodes_batch = 2
 	batch_split = rank // nodes_model
@@ -113,3 +152,4 @@ if __name__ == "__main__":
 	elif rank == 5:
 		print("rank: ", rank, "my data: ", x, y)
 		comm.Barrier()
+	"""

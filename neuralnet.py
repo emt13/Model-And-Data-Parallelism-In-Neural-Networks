@@ -2,6 +2,7 @@ import numpy as np
 from mpi4py import MPI
 from batch_helper import scatter_data, all_reduce_data
 from model_helper import all_gather_data
+from integrated_helper import scatter_broadcast
 from layers import l2_loss, fully_connected_layer, softmax_loss
 from sklearn import preprocessing
     
@@ -268,8 +269,46 @@ class NeuralNetwork:
                 rank = comm.Get_rank()
                 size = comm.Get_size()
 
-                # Convention: "batch-wise" major order
+                # Convention: "model-wise" major order
+                """
+                Example:
+                nodes_model = 3
+                nodes_batch = 2    
+                
+                -> WORLD
+                comm_world:
+                |comm_world|comm_world|comm_world|
+                |comm_world|comm_world|comm_world|
+
+                ranks: 
+                |0|1|2|
+                |3|4|5|
+
+                -> BATCH
+                batch_split:
+                |0|0|0|
+                |1|1|1|
+                
+                batch_communicators:
+                |comm_world0|comm_world1|comm_world2|
+                |comm_world0|comm_world1|comm_world2|
+
+                -> MODEL
+                batch_split:
+                |0|1|2|
+                |0|1|2|
+                
+                batch_communicators:
+                |comm_word0|comm_word0|comm_word0|
+                |comm_word1|comm_word1|comm_word1|
+
+                """
+                color_batch = rank % self.nodes_model
+                comm_batch =  MPI.Comm.Split(comm, color_batch, rank)
                 batch_split = rank // self.nodes_batch
+
+                color_model = rank // self.nodes_model 
+                comm_model = MPI.Comm.Split(comm, color_model, rank)
                 model_split = rank % self.nodes_model
 
                 if rank != 0:
@@ -292,41 +331,62 @@ class NeuralNetwork:
                             all_x = np.array([j[0] for j in mini_batches[i]])
                             all_y = np.array([j[1] for j in mini_batches[i]])
                         
-                        #TODO
-                        x_batch_split = scatter_data(all_x, (mini_batch_shapes[i], x_shape[1]) , comm, rank, size)
-                        y_batch_split = scatter_data(all_y, (mini_batch_shapes[i], y_shape[1]) , comm, rank, size)
+                        x_batch_split = scatter_broadcast(all_x, (mini_batch_shapes[i], x_shape[1]), batch_split, self.nodes_model, self.nodes_batch, comm, rank, size)
+                        y_batch_split = scatter_broadcast(all_y, (mini_batch_shapes[i], y_shape[1]), batch_split, self.nodes_model, self.nodes_batch, comm, rank, size)
 
                         if x_batch_split.size != 0 :
                             all_zs_batch_split = [x_batch_split]
 
+                            dims = []
                             for layer in layers:
-                                z_rank = layer.forward(x_batch_split)
-                                
-                                #TODO
-                                z_batch_split = all_reduce_data(z_rank)
+                                if layer.w.size != 0:
+                                    z_rank = layer.forward(x_batch_split)
+                                else:
+                                    z_rank = np.array([]).reshape((0,0))
+
+                                z_batch_split = np.transpose(all_gather_data(np.transpose(z_rank), comm_model, model_split, self.nodes_model))
                                 all_zs_batch_split.append(z_batch_split)
+                                dims.append(x_batch_split.shape)
                                 x_batch_split = z_batch_split
 
                             loss_value, dy_batch_split = loss.loss(all_zs_batch_split[-1], y_batch_split)
+                            j = -1
+                            for layer in reversed(layers):
+                                if layer.w.size != 0:
+                                    dy_rank =  slice(dy_batch_split, model_split, self.nodes_model )    
+                                    dx_rank, dw_rank, db_rank = layer.backward(dy_rank)
 
-                            for layer in reversed(layer):
-                                dx_rank, dw_rank, db_rank = layer.backward(dy_batch_split) 
+                                else:
+                                    dx_rank = np.zeros(dims[j])
+                                    dw_rank = np.zeros(layer.w.shape)
+                                    db_rank = np.zeros(layer.b.shape)
 
-                                # TODO
-                                dx_batch_split = all_reduce_data(dx_rank)
+                                j = j - 1    
+
+                                dx_batch_split = all_reduce_data([dx_rank], comm_model, model_split, self.nodes_model)[0]
                                 dy_batch_split = dx_batch_split
-                                #TODO
-                                dw_model_split = all_reduce_data(dw_rank)
-                                #TODO
-                                db_model_split = all_reduce_data(db_rank)
 
-                                layer.apply_gradient(dw_model_split, db_model_split, eta, mini_batch_shapes[i])
+                                dw_model_split = all_reduce_data([dw_rank], comm_batch, batch_split, self.nodes_batch)[0]
 
-                        else:
-                            #TODO
-                            pass
+                                db_model_split = all_reduce_data([db_rank], comm_batch, batch_split, self.nodes_batch)[0]
+                                
+                                if layer.w.size != 0:
+                                    layer.apply_gradient(dw_model_split, db_model_split, eta, mini_batch_shapes[i])
 
+                        else:# (x_batch_split.size == 0)
+                            for layer in reversed(layers):
+                                dw_rank = np.zeros(layer.w.shape)
+                                db_rank = np.zeros(layer.b.shape)
+                                
+                                dw_model_split = all_reduce_data([dw_rank], comm_batch, batch_split, self.nodes_batch)[0]
 
+                                db_model_split = all_reduce_data([db_rank], comm_batch, batch_split, self.nodes_batch)[0]
+
+                                if layer.w.size != 0:
+                                    layer.apply_gradient(dw_model_split, db_model_split, eta, mini_batch_shapes[i])
+
+                    if rank == 0:
+                        print ("Epoch {0}/{1} complete".format(e+1, epochs))
 
 
                 
@@ -546,7 +606,7 @@ def main():
     elif typeParallel.lower() == "batch":
         nn.train_batch_parallelism(x_train, y_train, epochs, mini_batch_size, eta, test_data=test_data)
     elif typeParallel.lower() == "both":
-        pass
+        nn.train_integrated_parallelism(x_train, y_train, epochs, mini_batch_size, eta, test_data=test_data)
     else:
         print("ERROR: need to use either model, batch, or both")
 
