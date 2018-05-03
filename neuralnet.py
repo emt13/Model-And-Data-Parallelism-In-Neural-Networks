@@ -103,10 +103,10 @@ class NeuralNetwork:
                             if layer.w.size != 0:
                                 layer.apply_gradient(dw_rank, db_rank, eta, mini_batch_shapes[i])
                     
-                    
+                    evaluation = self.evaluate(test_data, layers, loss, "model",comm, rank, size)
                     if rank == 0:          
                         if test_data:
-                            print ("Epoch {0}/{1} complete - loss: {2}".format(e+1, epochs, self.evaluate(test_data, layers, loss, parr_type = "model")))
+                            print ("Epoch {0}/{1} complete - loss: {2}".format(e+1, epochs, evaluation))
                         else:
                             print ("Epoch {0}/{1} complete - last training loss: {2}".format(e+1, epochs, loss_value))
                         eEnd = MPI.Wtime()
@@ -242,7 +242,7 @@ class NeuralNetwork:
                             count += 1
                         '''
                         #if test_data:
-                        #   print ("Epoch {0}/{1} complete - loss: {2}".format(e+1, epochs, self.evaluate(test_data, layers, loss, parr_type = "batch")))
+                        #   print ("Epoch {0}/{1} complete - loss: {2}".format(e+1, epochs, self.evaluate(test_data, layers, loss, "batch")))
                         #else:
                         #   print ("Epoch {0}/{1} complete".format(e+1, epochs))
                 if rank == 0:
@@ -330,15 +330,15 @@ class NeuralNetwork:
 
 
                 
-        def evaluate(self, test_data, layers, loss, parr_type = "batch"):
-            test_results = [(self.feedforward(np.array([x_test]), layers, parr_type), y_test)
+        def evaluate(self, test_data, layers, loss, parr_type,comm, rank, size):
+            test_results = [(self.feedforward(np.array([x_test]), layers, parr_type,comm, rank, size), y_test)
                             for (x_test, y_test) in test_data]
             n_test = len(test_data)
             return (1.0/(1.0*n_test) * sum(loss.loss(y_predicted, y_truth)[0] for (y_predicted, y_truth) in test_results))
         
-        def feedforward(self, a, layers, parr_type= "batch"):
+        def feedforward(self, a, layers, parr_type,comm, rank, size):
             """Return the output of the network if ``a`` is input."""
-            if parr_type == "serial" or "batch":
+            if parr_type == "serial" or parr_type == "batch":
                 for layer in layers:
                     a = layer.forward(a)
 
@@ -348,8 +348,9 @@ class NeuralNetwork:
                         z_rank = layer.forward(a)
                     else: 
                         z_rank = np.array([]).reshape((0,0))
+                    
                     a = layer.forward(a)
-                    a = np.transpose(all_gather_data(np.transpose(a)))
+                    a = np.transpose(all_gather_data(np.transpose(a), comm, rank, size))
 
             return a
 
