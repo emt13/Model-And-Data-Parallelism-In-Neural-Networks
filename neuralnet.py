@@ -316,8 +316,13 @@ class NeuralNetwork:
                     del y
 
                 layers, loss = self._init_layers(model_split, self.nodes_model)
+                
+                start = MPI.Wtime()
+                epochTimes = []   
+
 
                 for e in range(epochs):
+                    eStart = MPI.Wtime()
                     if(rank==0):
                         training_data = list(zip(list(x), list(y)))
                         n = len(training_data)
@@ -386,9 +391,14 @@ class NeuralNetwork:
                                     layer.apply_gradient(dw_model_split, db_model_split, eta, mini_batch_shapes[i])
 
                     if rank == 0:
-                        print ("Epoch {0}/{1} complete".format(e+1, epochs))
+                        eEnd = MPI.Wtime()
+                        epochTimes.append(eEnd - eStart)
+                        print ("Epoch {0}/{1} complete, time: {2}".format(e+1, epochs, epochTimes[-1]))
 
-
+                if rank == 0:
+                    end = MPI.Wtime()
+                    print(" Total time:", end - start)
+                
                 
         def evaluate(self, test_data, layers, loss, parr_type,comm, rank, size):
             test_results = [(self.feedforward(np.array([x_test]), layers, parr_type,comm, rank, size), y_test)
