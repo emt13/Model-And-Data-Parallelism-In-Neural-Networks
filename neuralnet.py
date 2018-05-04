@@ -305,7 +305,7 @@ class NeuralNetwork:
                 """
                 color_batch = rank % self.nodes_model
                 comm_batch =  MPI.Comm.Split(comm, color_batch, rank)
-                batch_split = rank // self.nodes_batch
+                batch_split = rank // self.nodes_model
 
                 color_model = rank // self.nodes_model 
                 comm_model = MPI.Comm.Split(comm, color_model, rank)
@@ -597,10 +597,10 @@ def main():
     
     prevSize = x_train.shape[1]
     for s in neurons:
-        nn.add_layer("fc", prevSize, s // model_nodes)
+        nn.add_layer("fc", prevSize, s)
         if rank == 0:
-            print("  added layer |", prevSize,"->", s // model_nodes)
-        prevSize = s // model_nodes
+            print("  added layer |", prevSize,"->", s)
+        prevSize = s
     nn.add_layer("fc", prevSize, y_train.shape[1])   
     
     if rank == 0: 

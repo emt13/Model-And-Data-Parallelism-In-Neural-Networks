@@ -4,10 +4,10 @@ class fully_connected_layer:
         def __init__(self, size_input, size_output, seed, activation='relu'):
                 np.random.seed(seed)
                 #mask needed for model parellelism to zero out values held by other processes
-                #self.w = np.random.randn(size_input, size_output)
-                #self.b = np.random.randn(size_output)
-                self.w = np.ones((size_input, size_output))
-                self.b = np.ones(size_output)
+                self.w = np.random.randn(size_input, size_output)
+                self.b = np.random.randn(size_output)
+                #self.w = np.ones((size_input, size_output))
+                #self.b = np.ones(size_output)
                 self.cache = []
                 self.activation = activation
 
