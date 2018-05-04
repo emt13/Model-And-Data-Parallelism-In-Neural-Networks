@@ -360,34 +360,29 @@ class NeuralNetwork:
                                 if layer.w.size != 0:
                                     dy_rank =  slice(dy_batch_split, model_split, self.nodes_model )    
                                     dx_rank, dw_rank, db_rank = layer.backward(dy_rank)
-
+                                    dw_model_split = all_reduce_data([dw_rank], comm_batch, batch_split, self.nodes_batch)[0]
+                                    db_model_split = all_reduce_data([db_rank], comm_batch, batch_split, self.nodes_batch)[0]
+                                    layer.apply_gradient(dw_model_split, db_model_split, eta, mini_batch_shapes[i])
+                                
                                 else:
                                     dx_rank = np.zeros(dims[j])
-                                    dw_rank = np.zeros(layer.w.shape)
-                                    db_rank = np.zeros(layer.b.shape)
 
                                 j = j - 1    
 
                                 dx_batch_split = all_reduce_data([dx_rank], comm_model, model_split, self.nodes_model)[0]
                                 dy_batch_split = dx_batch_split
 
-                                dw_model_split = all_reduce_data([dw_rank], comm_batch, batch_split, self.nodes_batch)[0]
-
-                                db_model_split = all_reduce_data([db_rank], comm_batch, batch_split, self.nodes_batch)[0]
                                 
-                                if layer.w.size != 0:
-                                    layer.apply_gradient(dw_model_split, db_model_split, eta, mini_batch_shapes[i])
+        
+                                    
 
                         else:# (x_batch_split.size == 0)
                             for layer in reversed(layers):
-                                dw_rank = np.zeros(layer.w.shape)
-                                db_rank = np.zeros(layer.b.shape)
-                                
-                                dw_model_split = all_reduce_data([dw_rank], comm_batch, batch_split, self.nodes_batch)[0]
-
-                                db_model_split = all_reduce_data([db_rank], comm_batch, batch_split, self.nodes_batch)[0]
-
                                 if layer.w.size != 0:
+                                    dw_rank = np.zeros(layer.w.shape)
+                                    db_rank = np.zeros(layer.b.shape)
+                                    dw_model_split = all_reduce_data([dw_rank], comm_batch, batch_split, self.nodes_batch)[0]
+                                    db_model_split = all_reduce_data([db_rank], comm_batch, batch_split, self.nodes_batch)[0]
                                     layer.apply_gradient(dw_model_split, db_model_split, eta, mini_batch_shapes[i])
 
                     if rank == 0:
