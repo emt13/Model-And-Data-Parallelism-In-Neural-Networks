@@ -1,0 +1,195 @@
+starting epoch: 0
+starting epoch: 1
+starting epoch: 2
+starting epoch: 3
+starting epoch: 4
+starting epoch: 5
+starting epoch: 6
+starting epoch: 7
+starting epoch: 8
+starting epoch: 9
+starting epoch: 0
+starting epoch: 1
+starting epoch: 2
+starting epoch: 3
+starting epoch: 4
+starting epoch: 5
+starting epoch: 6
+starting epoch: 7
+starting epoch: 8
+starting epoch: 9
+configured to run:
+ batch nodes 1
+ model nodes 16
+ type: model
+ dataset: large
+ epochs: 10
+ mini batch size: 10000
+ eta: 1e-08
+ neurons: [256]
+Starting test...
+ Fetching data...
+ succesfully fetched the data.
+  x_train shape: (560000, 16)
+  y_train shape: (560000, 2)
+  x_test shape: (140000, 16)
+  y_test shape: (140000, 2)
+ Creating the neural network...
+  added layer | 16 -> 16
+  added output layer | 16 -> 2
+  added loss layer
+ Finished creating network.
+ Beginning training the network...
+starting epoch: 0
+starting epoch: 1
+starting epoch: 2
+starting epoch: 3
+starting epoch: 4
+starting epoch: 5
+starting epoch: 6
+starting epoch: 7
+starting epoch: 8
+starting epoch: 9
+Finished model in 45.97003889083862
+   0    5.420525074005127
+   1    4.66861891746521
+   2    4.779825210571289
+   3    4.897765874862671
+   4    4.407334089279175
+   5    4.320425987243652
+   6    4.376096963882446
+   7    4.326125144958496
+   8    4.185863971710205
+   9    4.587361097335815
+
+Finished test
+starting epoch: 0
+starting epoch: 1
+starting epoch: 2
+starting epoch: 3
+starting epoch: 4
+starting epoch: 5
+starting epoch: 6
+starting epoch: 7
+starting epoch: 8
+starting epoch: 9
+starting epoch: 0
+starting epoch: 1
+starting epoch: 2
+starting epoch: 3
+starting epoch: 4
+starting epoch: 5
+starting epoch: 6
+starting epoch: 7
+starting epoch: 8
+starting epoch: 9
+starting epoch: 0
+starting epoch: 1
+starting epoch: 2
+starting epoch: 3
+starting epoch: 4
+starting epoch: 5
+starting epoch: 6
+starting epoch: 7
+starting epoch: 8
+starting epoch: 9
+starting epoch: 0
+starting epoch: 1
+starting epoch: 2
+starting epoch: 3
+starting epoch: 4
+starting epoch: 5
+starting epoch: 6
+starting epoch: 7
+starting epoch: 8
+starting epoch: 9
+starting epoch: 0
+starting epoch: 1
+starting epoch: 2
+starting epoch: 3
+starting epoch: 4
+starting epoch: 5
+starting epoch: 6
+starting epoch: 7
+starting epoch: 8
+starting epoch: 9
+starting epoch: 0
+starting epoch: 1
+starting epoch: 2
+starting epoch: 3
+starting epoch: 4
+starting epoch: 5
+starting epoch: 6
+starting epoch: 7
+starting epoch: 8
+starting epoch: 9
+starting epoch: 0
+starting epoch: 1
+starting epoch: 2
+starting epoch: 3
+starting epoch: 4
+starting epoch: 5
+starting epoch: 6
+starting epoch: 7
+starting epoch: 8
+starting epoch: 9
+starting epoch: 0
+starting epoch: 1
+starting epoch: 2
+starting epoch: 3
+starting epoch: 4
+starting epoch: 5
+starting epoch: 6
+starting epoch: 7
+starting epoch: 8
+starting epoch: 9
+starting epoch: 0
+starting epoch: 1
+starting epoch: 2
+starting epoch: 3
+starting epoch: 4
+starting epoch: 5
+starting epoch: 6
+starting epoch: 7
+starting epoch: 8
+starting epoch: 9
+starting epoch: 0
+starting epoch: 1
+starting epoch: 2
+starting epoch: 3
+starting epoch: 4
+starting epoch: 5
+starting epoch: 6
+starting epoch: 7
+starting epoch: 8
+starting epoch: 9
+starting epoch: 0
+starting epoch: 1
+starting epoch: 2
+starting epoch: 3
+starting epoch: 4
+starting epoch: 5
+starting epoch: 6
+starting epoch: 7
+starting epoch: 8
+starting epoch: 9
+starting epoch: 0
+starting epoch: 1
+starting epoch: 2
+starting epoch: 3
+starting epoch: 4
+starting epoch: 5
+starting epoch: 6
+starting epoch: 7
+starting epoch: 8
+starting epoch: 9
+starting epoch: 0
+starting epoch: 1
+starting epoch: 2
+starting epoch: 3
+starting epoch: 4
+starting epoch: 5
+starting epoch: 6
+starting epoch: 7
+starting epoch: 8
+starting epoch: 9

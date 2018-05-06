@@ -1,0 +1,208 @@
+loading data
+(100000, 16)
+(100000, 2)
+loading data
+(100000, 16)
+(100000, 2)
+Epoch 1/100 complete - loss: nan
+Epoch 2/100 complete - loss: nan
+Epoch 3/100 complete - loss: nan
+Epoch 4/100 complete - loss: nan
+Epoch 5/100 complete - loss: nan
+Epoch 6/100 complete - loss: nan
+Epoch 7/100 complete - loss: nan
+Epoch 8/100 complete - loss: nan
+Epoch 9/100 complete - loss: nan
+Epoch 10/100 complete - loss: nan
+Epoch 11/100 complete - loss: nan
+Epoch 12/100 complete - loss: nan
+Epoch 13/100 complete - loss: nan
+Epoch 14/100 complete - loss: nan
+Epoch 15/100 complete - loss: nan
+Epoch 16/100 complete - loss: nan
+Epoch 17/100 complete - loss: nan
+Epoch 18/100 complete - loss: nan
+Epoch 19/100 complete - loss: nan
+Epoch 20/100 complete - loss: nan
+Epoch 21/100 complete - loss: nan
+Epoch 22/100 complete - loss: nan
+Epoch 23/100 complete - loss: nan
+Epoch 24/100 complete - loss: nan
+Epoch 25/100 complete - loss: nan
+Epoch 26/100 complete - loss: nan
+Epoch 27/100 complete - loss: nan
+Epoch 28/100 complete - loss: nan
+Epoch 29/100 complete - loss: nan
+Epoch 30/100 complete - loss: nan
+Epoch 31/100 complete - loss: nan
+Epoch 32/100 complete - loss: nan
+Epoch 33/100 complete - loss: nan
+Epoch 34/100 complete - loss: nan
+Epoch 35/100 complete - loss: nan
+Epoch 36/100 complete - loss: nan
+Epoch 37/100 complete - loss: nan
+Epoch 38/100 complete - loss: nan
+Epoch 39/100 complete - loss: nan
+Epoch 40/100 complete - loss: nan
+Epoch 41/100 complete - loss: nan
+Epoch 42/100 complete - loss: nan
+Epoch 43/100 complete - loss: nan
+Epoch 44/100 complete - loss: nan
+Epoch 45/100 complete - loss: nan
+Epoch 46/100 complete - loss: nan
+Epoch 47/100 complete - loss: nan
+Epoch 48/100 complete - loss: nan
+Epoch 49/100 complete - loss: nan
+Epoch 50/100 complete - loss: nan
+Epoch 51/100 complete - loss: nan
+Epoch 52/100 complete - loss: nan
+Epoch 53/100 complete - loss: nan
+Epoch 54/100 complete - loss: nan
+Epoch 55/100 complete - loss: nan
+Epoch 56/100 complete - loss: nan
+Epoch 57/100 complete - loss: nan
+Epoch 58/100 complete - loss: nan
+Epoch 59/100 complete - loss: nan
+Epoch 60/100 complete - loss: nan
+Epoch 61/100 complete - loss: nan
+Epoch 62/100 complete - loss: nan
+Epoch 63/100 complete - loss: nan
+Epoch 64/100 complete - loss: nan
+Epoch 65/100 complete - loss: nan
+Epoch 66/100 complete - loss: nan
+Epoch 67/100 complete - loss: nan
+Epoch 68/100 complete - loss: nan
+Epoch 69/100 complete - loss: nan
+Epoch 70/100 complete - loss: nan
+Epoch 71/100 complete - loss: nan
+Epoch 72/100 complete - loss: nan
+Epoch 73/100 complete - loss: nan
+Epoch 74/100 complete - loss: nan
+Epoch 75/100 complete - loss: nan
+Epoch 76/100 complete - loss: nan
+Epoch 77/100 complete - loss: nan
+Epoch 78/100 complete - loss: nan
+Epoch 79/100 complete - loss: nan
+Epoch 80/100 complete - loss: nan
+Epoch 81/100 complete - loss: nan
+Epoch 82/100 complete - loss: nan
+Epoch 83/100 complete - loss: nan
+Epoch 84/100 complete - loss: nan
+Epoch 85/100 complete - loss: nan
+Epoch 86/100 complete - loss: nan
+Epoch 87/100 complete - loss: nan
+Epoch 88/100 complete - loss: nan
+Epoch 89/100 complete - loss: nan
+Epoch 90/100 complete - loss: nan
+Epoch 91/100 complete - loss: nan
+Epoch 92/100 complete - loss: nan
+Epoch 93/100 complete - loss: nan
+Epoch 94/100 complete - loss: nan
+Epoch 95/100 complete - loss: nan
+Epoch 96/100 complete - loss: nan
+Epoch 97/100 complete - loss: nan
+Epoch 98/100 complete - loss: nan
+Epoch 99/100 complete - loss: nan
+Epoch 100/100 complete - loss: nan
+Total time was: 217.68761587142944
+   0    0.4625720977783203
+   1    0.3411080837249756
+   2    0.3125481605529785
+   3    0.2939009666442871
+   4    0.2945210933685303
+   5    0.3035149574279785
+   6    0.3022899627685547
+   7    0.30823183059692383
+   8    0.2948160171508789
+   9    0.3117969036102295
+   10    0.30562782287597656
+   11    0.31197285652160645
+   12    0.3132929801940918
+   13    0.3121311664581299
+   14    0.311352014541626
+   15    0.308398962020874
+   16    0.30538511276245117
+   17    0.3108839988708496
+   18    0.30594682693481445
+   19    0.30390310287475586
+   20    0.30524206161499023
+   21    0.30085206031799316
+   22    0.3094758987426758
+   23    0.30962300300598145
+   24    0.307326078414917
+   25    0.30779099464416504
+   26    0.2947540283203125
+   27    0.3080711364746094
+   28    0.3069469928741455
+   29    0.3060457706451416
+   30    0.2989521026611328
+   31    0.3094148635864258
+   32    0.3071858882904053
+   33    0.3112218379974365
+   34    0.29610681533813477
+   35    0.3098587989807129
+   36    0.3019440174102783
+   37    0.3099331855773926
+   38    0.3083629608154297
+   39    0.30201292037963867
+   40    0.30216479301452637
+   41    0.30676698684692383
+   42    0.30814290046691895
+   43    0.3057079315185547
+   44    0.3103020191192627
+   45    0.3080310821533203
+   46    0.3033590316772461
+   47    0.3065061569213867
+   48    0.3086850643157959
+   49    0.3081779479980469
+   50    0.30454015731811523
+   51    0.3058900833129883
+   52    0.3009469509124756
+   53    0.3022727966308594
+   54    0.3075428009033203
+   55    0.3087339401245117
+   56    0.3095078468322754
+   57    0.3112061023712158
+   58    0.3072080612182617
+   59    0.30617713928222656
+   60    0.30617499351501465
+   61    0.3070549964904785
+   62    0.30413222312927246
+   63    0.30460119247436523
+   64    0.2951648235321045
+   65    0.29778289794921875
+   66    0.3006319999694824
+   67    0.30057811737060547
+   68    0.29981303215026855
+   69    0.3061490058898926
+   70    0.3075268268585205
+   71    0.3025679588317871
+   72    0.30730199813842773
+   73    0.30698680877685547
+   74    0.3051419258117676
+   75    0.302976131439209
+   76    0.2999589443206787
+   77    0.3016040325164795
+   78    0.30770397186279297
+   79    0.3055720329284668
+   80    0.30223989486694336
+   81    0.30478405952453613
+   82    0.302440881729126
+   83    0.30819201469421387
+   84    0.3020620346069336
+   85    0.310467004776001
+   86    0.30594301223754883
+   87    0.309298038482666
+   88    0.3045680522918701
+   89    0.3076469898223877
+   90    0.3039989471435547
+   91    0.30837297439575195
+   92    0.3086888790130615
+   93    0.30508995056152344
+   94    0.30538201332092285
+   95    0.3096740245819092
+   96    0.31024789810180664
+   97    0.3046541213989258
+   98    0.3078148365020752
+   99    0.30677103996276855
+

@@ -1,0 +1,55 @@
+starting epoch: 0
+starting epoch: 1
+starting epoch: 2
+starting epoch: 3
+starting epoch: 4
+starting epoch: 5
+starting epoch: 6
+starting epoch: 7
+starting epoch: 8
+starting epoch: 9
+configured to run:
+ batch nodes 1
+ model nodes 2
+ type: model
+ dataset: large
+ epochs: 10
+ mini batch size: 10000
+ eta: 1e-08
+ neurons: [128]
+Starting test...
+ Fetching data...
+ succesfully fetched the data.
+  x_train shape: (560000, 16)
+  y_train shape: (560000, 2)
+  x_test shape: (140000, 16)
+  y_test shape: (140000, 2)
+ Creating the neural network...
+  added layer | 16 -> 64
+  added output layer | 64 -> 2
+  added loss layer
+ Finished creating network.
+ Beginning training the network...
+starting epoch: 0
+starting epoch: 1
+starting epoch: 2
+starting epoch: 3
+starting epoch: 4
+starting epoch: 5
+starting epoch: 6
+starting epoch: 7
+starting epoch: 8
+starting epoch: 9
+Finished model in 94.06823015213013
+   0    10.460757970809937
+   1    9.310197114944458
+   2    9.37735104560852
+   3    9.390130043029785
+   4    9.159332990646362
+   5    9.292003870010376
+   6    9.253213167190552
+   7    9.21017599105835
+   8    9.356552124023438
+   9    9.258376836776733
+
+Finished test

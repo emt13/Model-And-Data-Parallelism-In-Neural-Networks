@@ -1,0 +1,250 @@
+loading data
+(100000, 16)
+(100000, 2)
+loading data
+(100000, 16)
+(100000, 2)
+loading data
+(100000, 16)
+(100000, 2)
+loading data
+(100000, 16)
+(100000, 2)
+loading data
+(100000, 16)
+(100000, 2)
+loading data
+(100000, 16)
+(100000, 2)
+loading data
+(100000, 16)
+(100000, 2)
+loading data
+(100000, 16)
+(100000, 2)
+loading data
+(100000, 16)
+(100000, 2)
+loading data
+(100000, 16)
+(100000, 2)
+loading data
+(100000, 16)
+(100000, 2)
+loading data
+(100000, 16)
+(100000, 2)
+loading data
+(100000, 16)
+(100000, 2)
+loading data
+(100000, 16)
+(100000, 2)
+loading data
+(100000, 16)
+(100000, 2)
+loading data
+(100000, 16)
+(100000, 2)
+Epoch 1/100 complete - loss: nan
+Epoch 2/100 complete - loss: nan
+Epoch 3/100 complete - loss: nan
+Epoch 4/100 complete - loss: nan
+Epoch 5/100 complete - loss: nan
+Epoch 6/100 complete - loss: nan
+Epoch 7/100 complete - loss: nan
+Epoch 8/100 complete - loss: nan
+Epoch 9/100 complete - loss: nan
+Epoch 10/100 complete - loss: nan
+Epoch 11/100 complete - loss: nan
+Epoch 12/100 complete - loss: nan
+Epoch 13/100 complete - loss: nan
+Epoch 14/100 complete - loss: nan
+Epoch 15/100 complete - loss: nan
+Epoch 16/100 complete - loss: nan
+Epoch 17/100 complete - loss: nan
+Epoch 18/100 complete - loss: nan
+Epoch 19/100 complete - loss: nan
+Epoch 20/100 complete - loss: nan
+Epoch 21/100 complete - loss: nan
+Epoch 22/100 complete - loss: nan
+Epoch 23/100 complete - loss: nan
+Epoch 24/100 complete - loss: nan
+Epoch 25/100 complete - loss: nan
+Epoch 26/100 complete - loss: nan
+Epoch 27/100 complete - loss: nan
+Epoch 28/100 complete - loss: nan
+Epoch 29/100 complete - loss: nan
+Epoch 30/100 complete - loss: nan
+Epoch 31/100 complete - loss: nan
+Epoch 32/100 complete - loss: nan
+Epoch 33/100 complete - loss: nan
+Epoch 34/100 complete - loss: nan
+Epoch 35/100 complete - loss: nan
+Epoch 36/100 complete - loss: nan
+Epoch 37/100 complete - loss: nan
+Epoch 38/100 complete - loss: nan
+Epoch 39/100 complete - loss: nan
+Epoch 40/100 complete - loss: nan
+Epoch 41/100 complete - loss: nan
+Epoch 42/100 complete - loss: nan
+Epoch 43/100 complete - loss: nan
+Epoch 44/100 complete - loss: nan
+Epoch 45/100 complete - loss: nan
+Epoch 46/100 complete - loss: nan
+Epoch 47/100 complete - loss: nan
+Epoch 48/100 complete - loss: nan
+Epoch 49/100 complete - loss: nan
+Epoch 50/100 complete - loss: nan
+Epoch 51/100 complete - loss: nan
+Epoch 52/100 complete - loss: nan
+Epoch 53/100 complete - loss: nan
+Epoch 54/100 complete - loss: nan
+Epoch 55/100 complete - loss: nan
+Epoch 56/100 complete - loss: nan
+Epoch 57/100 complete - loss: nan
+Epoch 58/100 complete - loss: nan
+Epoch 59/100 complete - loss: nan
+Epoch 60/100 complete - loss: nan
+Epoch 61/100 complete - loss: nan
+Epoch 62/100 complete - loss: nan
+Epoch 63/100 complete - loss: nan
+Epoch 64/100 complete - loss: nan
+Epoch 65/100 complete - loss: nan
+Epoch 66/100 complete - loss: nan
+Epoch 67/100 complete - loss: nan
+Epoch 68/100 complete - loss: nan
+Epoch 69/100 complete - loss: nan
+Epoch 70/100 complete - loss: nan
+Epoch 71/100 complete - loss: nan
+Epoch 72/100 complete - loss: nan
+Epoch 73/100 complete - loss: nan
+Epoch 74/100 complete - loss: nan
+Epoch 75/100 complete - loss: nan
+Epoch 76/100 complete - loss: nan
+Epoch 77/100 complete - loss: nan
+Epoch 78/100 complete - loss: nan
+Epoch 79/100 complete - loss: nan
+Epoch 80/100 complete - loss: nan
+Epoch 81/100 complete - loss: nan
+Epoch 82/100 complete - loss: nan
+Epoch 83/100 complete - loss: nan
+Epoch 84/100 complete - loss: nan
+Epoch 85/100 complete - loss: nan
+Epoch 86/100 complete - loss: nan
+Epoch 87/100 complete - loss: nan
+Epoch 88/100 complete - loss: nan
+Epoch 89/100 complete - loss: nan
+Epoch 90/100 complete - loss: nan
+Epoch 91/100 complete - loss: nan
+Epoch 92/100 complete - loss: nan
+Epoch 93/100 complete - loss: nan
+Epoch 94/100 complete - loss: nan
+Epoch 95/100 complete - loss: nan
+Epoch 96/100 complete - loss: nan
+Epoch 97/100 complete - loss: nan
+Epoch 98/100 complete - loss: nan
+Epoch 99/100 complete - loss: nan
+Epoch 100/100 complete - loss: nan
+Total time was: 202.51016783714294
+   0    0.42321276664733887
+   1    0.28555893898010254
+   2    0.2521979808807373
+   3    0.2365710735321045
+   4    0.24882793426513672
+   5    0.24302005767822266
+   6    0.2511019706726074
+   7    0.23177003860473633
+   8    0.2512531280517578
+   9    0.248183012008667
+   10    0.290769100189209
+   11    0.2558259963989258
+   12    0.24961400032043457
+   13    0.24855613708496094
+   14    0.23382806777954102
+   15    0.23424196243286133
+   16    0.2346208095550537
+   17    0.23349308967590332
+   18    0.23315215110778809
+   19    0.2547779083251953
+   20    0.23367905616760254
+   21    0.2533388137817383
+   22    0.23229479789733887
+   23    0.2502319812774658
+   24    0.23277497291564941
+   25    0.24863314628601074
+   26    0.23356890678405762
+   27    0.24991106986999512
+   28    0.23329615592956543
+   29    0.25188207626342773
+   30    0.23299288749694824
+   31    0.2522609233856201
+   32    0.23310017585754395
+   33    0.2506561279296875
+   34    0.23308086395263672
+   35    0.2514369487762451
+   36    0.23382997512817383
+   37    0.250316858291626
+   38    0.23339390754699707
+   39    0.2515699863433838
+   40    0.2324368953704834
+   41    0.24836993217468262
+   42    0.23359894752502441
+   43    0.2501389980316162
+   44    0.23361897468566895
+   45    0.24884819984436035
+   46    0.23415493965148926
+   47    0.2519829273223877
+   48    0.23461413383483887
+   49    0.2492680549621582
+   50    0.23407697677612305
+   51    0.2513859272003174
+   52    0.23433804512023926
+   53    0.24927806854248047
+   54    0.23330998420715332
+   55    0.24959897994995117
+   56    0.23496079444885254
+   57    0.25007200241088867
+   58    0.2339630126953125
+   59    0.25162196159362793
+   60    0.23463201522827148
+   61    0.24972105026245117
+   62    0.2360060214996338
+   63    0.2515690326690674
+   64    0.23404288291931152
+   65    0.2499849796295166
+   66    0.2346949577331543
+   67    0.2502288818359375
+   68    0.23477792739868164
+   69    0.24985599517822266
+   70    0.23413705825805664
+   71    0.2541158199310303
+   72    0.23432016372680664
+   73    0.25046610832214355
+   74    0.2330799102783203
+   75    0.2501699924468994
+   76    0.232558012008667
+   77    0.25049400329589844
+   78    0.23425912857055664
+   79    0.25110816955566406
+   80    0.23276901245117188
+   81    0.24965596199035645
+   82    0.23309087753295898
+   83    0.2496199607849121
+   84    0.23335790634155273
+   85    0.24917888641357422
+   86    0.23465704917907715
+   87    0.249891996383667
+   88    0.2325420379638672
+   89    0.2497398853302002
+   90    0.23368191719055176
+   91    0.2517890930175781
+   92    0.23459506034851074
+   93    0.2502419948577881
+   94    0.23244214057922363
+   95    0.24984097480773926
+   96    0.23326611518859863
+   97    0.25258898735046387
+   98    0.2376689910888672
+   99    0.25260400772094727
+

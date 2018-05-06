@@ -1,0 +1,24 @@
+(700000, 16)
+(700000, 2)
+Epoch 1/10 complete - loss: nan
+Epoch 2/10 complete - loss: nan
+Epoch 3/10 complete - loss: nan
+Epoch 4/10 complete - loss: nan
+Epoch 5/10 complete - loss: nan
+Epoch 6/10 complete - loss: nan
+Epoch 7/10 complete - loss: nan
+Epoch 8/10 complete - loss: nan
+Epoch 9/10 complete - loss: nan
+Epoch 10/10 complete - loss: nan
+Finished model in 546.9802911281586
+   0    56.709603786468506
+   1    56.10393500328064
+   2    54.844902992248535
+   3    54.62293720245361
+   4    54.10602402687073
+   5    54.074403047561646
+   6    53.863730907440186
+   7    54.29235506057739
+   8    54.25074601173401
+   9    54.11160898208618
+

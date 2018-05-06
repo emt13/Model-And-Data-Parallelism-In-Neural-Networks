@@ -1,0 +1,62 @@
+rank: 1 count: 10000
+rank: 1 count: 20000
+rank: 1 count: 30000
+rank: 1 count: 40000
+rank: 1 count: 50000
+rank: 1 count: 60000
+rank: 1 count: 70000
+rank: 1 count: 80000
+rank: 1 count: 90000
+rank: 1 count: 100000
+(100000, 16)
+(100000, 2)
+rank: 3 count: 10000
+rank: 3 count: 20000
+rank: 3 count: 30000
+rank: 3 count: 40000
+rank: 3 count: 50000
+rank: 3 count: 60000
+rank: 3 count: 70000
+rank: 3 count: 80000
+rank: 3 count: 90000
+rank: 3 count: 100000
+(100000, 16)
+(100000, 2)
+rank: 2 count: 10000
+rank: 2 count: 20000
+rank: 2 count: 30000
+rank: 2 count: 40000
+rank: 2 count: 50000
+rank: 2 count: 60000
+rank: 2 count: 70000
+rank: 2 count: 80000
+rank: 2 count: 90000
+rank: 2 count: 100000
+(100000, 16)
+(100000, 2)
+rank: 0 count: 10000
+rank: 0 count: 20000
+rank: 0 count: 30000
+rank: 0 count: 40000
+rank: 0 count: 50000
+rank: 0 count: 60000
+rank: 0 count: 70000
+rank: 0 count: 80000
+rank: 0 count: 90000
+rank: 0 count: 100000
+(100000, 16)
+(100000, 2)
+Total time was: 3.638814926147461
+Scatter time: 1.504896640777588
+All reduce time: 0.024570226669311523
+  (0) 0.5821528434753418
+  (1) 0.3547089099884033
+  (2) 0.34264302253723145
+  (3) 0.3354220390319824
+  (4) 0.34987902641296387
+  (5) 0.31972503662109375
+  (6) 0.33665895462036133
+  (7) 0.31675004959106445
+  (8) 0.325808048248291
+  (9) 0.37505292892456055
+

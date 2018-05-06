@@ -1,0 +1,34 @@
+configured to run:
+ batch nodes 1
+ model nodes 16
+ type: both
+ dataset: medium
+ epochs: 10
+ mini batch size: 100
+ eta: 1e-06
+ neurons: [64]
+Starting test...
+ Fetching data...
+ succesfully fetched the data.
+  x_train shape: (1202, 4)
+  y_train shape: (1202, 1)
+  x_test shape: (301, 4)
+  y_test shape: (301, 1)
+ Creating the neural network...
+  added layer | 4 -> 4
+  added output layer | 4 -> 1
+  added loss layer
+ Finished creating network.
+ Beginning training the network...
+Epoch 1/10 complete, time: 0.20318102836608887
+Epoch 2/10 complete, time: 0.0161440372467041
+Epoch 3/10 complete, time: 0.018862009048461914
+Epoch 4/10 complete, time: 0.01668381690979004
+Epoch 5/10 complete, time: 0.01762104034423828
+Epoch 6/10 complete, time: 0.016674041748046875
+Epoch 7/10 complete, time: 0.016386032104492188
+Epoch 8/10 complete, time: 0.01634383201599121
+Epoch 9/10 complete, time: 0.015748977661132812
+Epoch 10/10 complete, time: 0.016078948974609375
+ Total time: 0.3538239002227783
+Finished test
